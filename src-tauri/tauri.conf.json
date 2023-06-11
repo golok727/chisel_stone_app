@@ -38,8 +38,9 @@
 				"fullscreen": false,
 				"resizable": true,
 				"title": "Chisel Stone",
-				"width": 800,
-				"height": 600,
+				"center": true,
+				"width": 1200,
+				"height": 800,
 				"theme": "Dark"
 			}
 		]
