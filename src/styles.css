@@ -1,0 +1,31 @@
+*,*::before,*::after{
+box-sizing: border-box;
+margin: 0;
+}
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: #0f0f0f;
+  background-color: #f6f6f6;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  --sidebar-background: rgb(29, 29, 29);
+  --editor-background: #191919;
+}
+body {
+  background-color: #1f1f1f;
+  color: #f6f6f6;
+  min-height: 100vh
+}
+
+image, video, source {
+  max-width: 100%;
+}

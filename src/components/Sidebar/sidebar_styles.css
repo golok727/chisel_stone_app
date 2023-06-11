@@ -1,0 +1,35 @@
+.app_sidebar {
+  padding: .8rem .6rem;
+  position: relative;
+  background-color: var(--sidebar-background); 
+  transition: all .2s ease;
+}
+
+.app__resizer {
+  position: absolute;
+  height: 100%;
+  background-color: transparent;
+  --resizer-width: 12px;
+  width: var(--resizer-width);
+
+  right: -6px;
+  top:0;
+  margin-left: -6px;
+  cursor: col-resize;
+  opacity: .3;
+}
+
+.app__resizer::after {
+  content: "";
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  background-color: #555;
+  left: 50%;
+}
+
+.app__resizer:hover {
+  transition: background .2s ease;
+  opacity: 1;
+
+}
