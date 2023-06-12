@@ -1,6 +1,10 @@
 import React, { MouseEventHandler } from "react";
 import "./sidebar_styles.css";
-
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../app/store";
+import Button from "../../Button";
+import { ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
+import { toggleSidebar } from "../../features/main/appSlice";
 interface SideBarProps {
 	width: number;
 	setDragging: React.Dispatch<React.SetStateAction<boolean>>;
@@ -12,9 +16,22 @@ const SideBar: React.FC<SideBarProps> = ({
 	onResizerDown,
 	setDragging,
 }) => {
+	const showSidebar = useSelector((state: RootState) => state.app.showSidebar);
+	const dispatch = useDispatch();
+	const closeSidebar = () => {
+		dispatch(toggleSidebar());
+	};
 	return (
-		<div className="app_sidebar" style={{ width: `${width}px` }}>
-			Sidebar
+		<div
+			className={`app_sidebar ${!showSidebar ? "hidden" : ""}`}
+			style={{ width: `${width}px` }}
+		>
+			<header>
+				<h3>Radha's Notes</h3>
+				<Button onClick={closeSidebar}>
+					<ChevronDoubleLeftIcon width={20} />
+				</Button>
+			</header>
 			<div
 				className="app__resizer"
 				onMouseDown={onResizerDown}

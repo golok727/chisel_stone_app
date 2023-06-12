@@ -1,0 +1,23 @@
+.page__title_editor {
+	font-size: 2rem;
+	font-weight: bold;
+	border: none;
+	outline: none;
+	padding: 1rem 0.2rem;
+	position: relative;
+	border-bottom: 10px solid transparent;
+}
+
+.page__title_editor.empty::after {
+	content: attr(data-placeholder);
+	color: var(--clr-text-gray-dark);
+	/* position: absolute;
+	top: 0;
+	left: 0; */
+}
+
+.page__title_editor:focus,
+.page__title_editor:hover {
+	border-bottom: 1px solid white;
+	border-bottom-color: var(--clr-btn-hover-background);
+}

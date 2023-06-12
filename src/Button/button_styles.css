@@ -1,0 +1,16 @@
+.app__btn-primary {
+	padding: 0.5rem 0.4rem;
+	order: 0;
+	background: transparent;
+	border: none;
+	color: var(--clr-btn-text-gray);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 10px;
+	user-select: none;
+}
+.app__btn-primary:hover {
+	background-color: var(--clr-btn-hover-background);
+}

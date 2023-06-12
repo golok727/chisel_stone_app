@@ -1,0 +1,9 @@
+.editor__page {
+	height: 100%;
+	overflow-y: auto;
+}
+.editor__page-container {
+	margin-inline: auto;
+	max-width: 70%;
+	padding: 1rem 0;
+}

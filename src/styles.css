@@ -1,31 +1,94 @@
-*,*::before,*::after{
-box-sizing: border-box;
-margin: 0;
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
 }
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+	font-size: 16px;
+	line-height: 24px;
+	font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+	/* color: #0f0f0f;
+	background-color: #f6f6f6; */
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;
 
-  --sidebar-background: rgb(29, 29, 29);
-  --editor-background: #191919;
+	--clr-sidebar-background: rgb(29, 29, 29);
+	--clr-editor-background: #191919;
+	--clr-text: #cfcfcf;
+	--clr-background: #0c0f13;
+	--clr-primary: #ff9500;
+	--clr-secondary: #37387b;
+	--clr-accent: #f93434;
+	--clr-btn-text-gray: #dadada;
+	--clr-btn-hover-background: #303030;
+	--clr-text-gray-dark: #383838;
+	--clr-light-text: #5e5e5e;
+
+	--clr-sidebar-hover-background: #242424;
+
+	--border-radius-sm: 10px;
+	--shadow-sm: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
+
 body {
-  background-color: #1f1f1f;
-  color: #f6f6f6;
-  min-height: 100vh
+	background-color: var(--clr-background);
+	color: var(--clr-text);
+	min-height: 100vh;
+	font-family: "Roboto", Inter, Avenir, Helvetica, Arial, sans-serif;
+	font-size: 0.8rem;
+	letter-spacing: 1.6;
+	overflow: hidden;
 }
 
-image, video, source {
-  max-width: 100%;
+html {
+	--clr-text: #f6f6f6;
+	--clr-sidebar-background: rgb(29, 29, 29);
+	--clr-editor-background: #191919;
+}
+html.light {
+	--clr-text: #0f0f0f;
+	--clr-sidebar-background: #f5f5f5;
+	--clr-editor-background: #ffffff;
+}
+
+image,
+video,
+source {
+	max-width: 100%;
+}
+
+.light-text {
+	color: var(--clr-light-text);
+}
+.flex {
+	display: flex;
+}
+.flex-col {
+	flex-direction: column;
+}
+.items-center {
+	align-items: center;
+}
+.justify-center {
+	justify-content: center;
+}
+.justify-between {
+	justify-content: space-between;
+}
+.gap-1 {
+	gap: 0.2;
+}
+
+.gap-2 {
+	gap: 0.3;
+}
+
+.gap-3 {
+	gap: 0.4;
 }

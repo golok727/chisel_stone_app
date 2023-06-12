@@ -1,0 +1,20 @@
+.editor__navbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.7rem 0.6rem;
+	position: sticky;
+	width: 100%;
+	top: 10;
+	border: 1px solid var(--clr-btn-hover-background);
+}
+.editor__navbar_right {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+.editor__navbar_left {
+	display: flex;
+	gap: 2;
+	align-items: center;
+}

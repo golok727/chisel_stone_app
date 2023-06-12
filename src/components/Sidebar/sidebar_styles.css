@@ -1,35 +1,54 @@
 .app_sidebar {
-  padding: .8rem .6rem;
-  position: relative;
-  background-color: var(--sidebar-background); 
-  transition: all .2s ease;
+	padding: 0.6rem 0.5rem;
+	position: relative;
+	background-color: var(--clr-sidebar-background);
+	transition: all 0.2s ease;
 }
 
-.app__resizer {
-  position: absolute;
-  height: 100%;
-  background-color: transparent;
-  --resizer-width: 12px;
-  width: var(--resizer-width);
+.app_sidebar.hidden {
+	display: none;
+}
 
-  right: -6px;
-  top:0;
-  margin-left: -6px;
-  cursor: col-resize;
-  opacity: .3;
+.app_sidebar header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 0.7rem;
+	align-items: center;
+	padding: 0.2rem 0.5rem;
+	cursor: pointer;
+}
+.app_sidebar header:hover {
+	background-color: var(--clr-sidebar-hover-background);
+	border-radius: var(--border-radius-sm);
+	box-shadow: var(--shadow-sm);
+	transition: all 0.4s ease;
+}
+.app__resizer {
+	position: absolute;
+	height: 100%;
+	background-color: transparent;
+	--resizer-width: 12px;
+	width: var(--resizer-width);
+
+	right: -6px;
+	top: 0;
+	margin-left: -6px;
+	cursor: col-resize;
+	opacity: 0.3;
 }
 
 .app__resizer::after {
-  content: "";
-  position: absolute;
-  width: 1px;
-  height: 100%;
-  background-color: #555;
-  left: 50%;
+	content: "";
+	position: absolute;
+	width: 1px;
+	height: 100%;
+	background-color: #444;
+	left: 50%;
+	z-index: 10;
 }
 
 .app__resizer:hover {
-  transition: background .2s ease;
-  opacity: 1;
-
+	transition: opacity 0.2s ease;
+	opacity: 1;
 }

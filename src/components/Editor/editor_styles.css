@@ -1,5 +1,8 @@
 .app_editor {
-  flex: 1;
-  background: var(--editor-background);
-  padding: .7rem .4rem;
+	flex: 1;
+	background: var(--clr-editor-background);
+	position: relative;
+	/* background: url("/blob-scatter.svg") no-repeat center center / cover; */
+
+	overflow: hidden;
 }
