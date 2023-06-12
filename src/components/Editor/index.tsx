@@ -1,7 +1,6 @@
-import React from "react";
-import "./editor_styles.css";
 import EditorNavbar from "./EditorNavbar";
 import Page from "./Page";
+import "./editor_styles.css";
 
 const Editor = () => {
 	return (

@@ -7,3 +7,28 @@
 	max-width: 70%;
 	padding: 1rem 0;
 }
+.editor__no_pages {
+	display: flex;
+	flex-direction: column;
+	cursor: help;
+	color: var(--clr-btn-hover-background);
+	justify-content: center;
+	height: 100%;
+	transition: color 0.2s ease;
+
+	margin-inline: auto;
+	max-width: 70%;
+}
+
+.editor__no_pages h4 {
+	font-size: 2rem;
+	line-height: 1.4;
+}
+
+.editor__no_pages:hover {
+	color: var(--clr-light-text);
+}
+.editor__no_pages__icons {
+	display: flex;
+	gap: 2rem;
+}

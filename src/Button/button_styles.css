@@ -1,4 +1,4 @@
-.app__btn-primary {
+.app__btn--primary {
 	padding: 0.5rem 0.4rem;
 	order: 0;
 	background: transparent;
@@ -11,6 +11,10 @@
 	border-radius: 10px;
 	user-select: none;
 }
-.app__btn-primary:hover {
+.app__btn--primary:hover {
 	background-color: var(--clr-btn-hover-background);
+}
+
+.app__btn.danger {
+	background: var(--clr-accent);
 }

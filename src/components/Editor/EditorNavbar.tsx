@@ -10,9 +10,15 @@ import Button from "../../Button";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
 import { toggleSidebar } from "../../features/appSlice";
+import { getCurrentPage } from "../../features/pagesSlice";
 
 const EditorNavbar = () => {
-	const showSidebar = useSelector((state: RootState) => state.app.showSidebar);
+	const { appStatus, showSidebar } = useSelector((state: RootState) => ({
+		showSidebar: state.app.showSidebar,
+		appStatus: state.app.appStatus,
+	}));
+	const currentPage = useSelector(getCurrentPage);
+
 	const dispatch = useDispatch();
 	const handleShowSidebar = () => {
 		dispatch(toggleSidebar());
@@ -25,10 +31,10 @@ const EditorNavbar = () => {
 						<Bars3Icon width={20} />
 					</Button>
 				)}
-				Untitled
+				{currentPage && <span>{currentPage.title}</span>}
 			</div>
 			<div className="editor__navbar_right">
-				<span className="light-text">Not Saved</span>
+				<span className="light-text">{appStatus}</span>
 				<div className="flex gap-3">
 					<Button>Save</Button>
 					<Button>

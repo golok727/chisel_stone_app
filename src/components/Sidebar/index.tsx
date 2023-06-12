@@ -9,11 +9,13 @@ import PagesSection from "./PagesSection";
 interface SideBarProps {
 	width: number;
 	setDragging: React.Dispatch<React.SetStateAction<boolean>>;
+	isDragging: boolean;
 	onResizerDown: MouseEventHandler<HTMLDivElement>;
 }
 
 const SideBar: React.FC<SideBarProps> = ({
 	width,
+	isDragging,
 	onResizerDown,
 	setDragging,
 }) => {
@@ -38,7 +40,7 @@ const SideBar: React.FC<SideBarProps> = ({
 			<PagesSection />
 
 			<div
-				className="app__resizer"
+				className={`app__resizer ${isDragging ? "dragging" : ""}`}
 				onMouseDown={onResizerDown}
 				onMouseUp={() => setDragging(false)}
 			></div>

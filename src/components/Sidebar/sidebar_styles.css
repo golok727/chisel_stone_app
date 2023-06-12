@@ -2,14 +2,14 @@
 	padding: 0.6rem 0.5rem;
 	position: relative;
 	background-color: var(--clr-sidebar-background);
-	transition: all 0.2s ease;
+	transition: all 0.3s ease;
 }
 
 .app_sidebar.hidden {
 	display: none;
 }
 
-.app_sidebar header {
+.app_sidebar > header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -18,7 +18,7 @@
 	padding: 0.2rem 0.5rem;
 	cursor: pointer;
 }
-.app_sidebar header:hover {
+.app_sidebar > header:hover {
 	background-color: var(--clr-sidebar-hover-background);
 	border-radius: var(--border-radius-sm);
 	box-shadow: var(--shadow-sm);
@@ -36,6 +36,10 @@
 	margin-left: -6px;
 	cursor: col-resize;
 	opacity: 0.3;
+}
+
+.app__resizer.dragging {
+	opacity: 1;
 }
 
 .app__resizer::after {
