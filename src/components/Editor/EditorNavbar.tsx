@@ -9,7 +9,7 @@ import "./editor_navbar_styles.css";
 import Button from "../../Button";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
-import { toggleSidebar } from "../../features/main/appSlice";
+import { toggleSidebar } from "../../features/appSlice";
 
 const EditorNavbar = () => {
 	const showSidebar = useSelector((state: RootState) => state.app.showSidebar);

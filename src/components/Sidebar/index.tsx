@@ -4,7 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
 import Button from "../../Button";
 import { ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
-import { toggleSidebar } from "../../features/main/appSlice";
+import { toggleSidebar } from "../../features/appSlice";
+import PagesSection from "./PagesSection";
 interface SideBarProps {
 	width: number;
 	setDragging: React.Dispatch<React.SetStateAction<boolean>>;
@@ -26,12 +27,16 @@ const SideBar: React.FC<SideBarProps> = ({
 			className={`app_sidebar ${!showSidebar ? "hidden" : ""}`}
 			style={{ width: `${width}px` }}
 		>
+			{/* Header */}
 			<header>
 				<h3>Radha's Notes</h3>
 				<Button onClick={closeSidebar}>
 					<ChevronDoubleLeftIcon width={20} />
 				</Button>
 			</header>
+
+			<PagesSection />
+
 			<div
 				className="app__resizer"
 				onMouseDown={onResizerDown}
