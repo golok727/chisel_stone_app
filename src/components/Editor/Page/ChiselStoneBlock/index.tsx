@@ -1,8 +1,8 @@
 import { PlusIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
+import ContentEditable from "react-contenteditable";
 import Button from "../../../../Button";
 import "./block_styles.css";
-import ContentEditable from "react-contenteditable";
 const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 	const blockEditorRef = useRef<HTMLElement | null>(null);
 
@@ -18,7 +18,7 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 			</div>
 			{block.type === "text" && (
 				<ContentEditable
-					data-placeholder="Press '/' for commands"
+					data-placeholder="Press '/' for commands..."
 					onChange={() => {}}
 					html={block.content}
 					innerRef={blockEditorRef}

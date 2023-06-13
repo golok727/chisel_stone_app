@@ -3,6 +3,6 @@
 	background: var(--clr-editor-background);
 	position: relative;
 	/* background: url("/blob-scatter.svg") no-repeat center center / cover; */
-
+	height: 100vh;
 	overflow: hidden;
 }

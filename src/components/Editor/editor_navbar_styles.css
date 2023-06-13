@@ -6,7 +6,12 @@
 	position: sticky;
 	width: 100%;
 	top: 10;
-	border-bottom: 1px solid var(--clr-btn-hover-background);
+	border-bottom: 1px solid var(--clr-accent);
+	box-shadow: 0 0 20px #f9343462;
+	transition: all 0.3s ease;
+}
+.editor__navbar:hover {
+	box-shadow: 0 0 50px #f9343462;
 }
 .editor__navbar_right {
 	display: flex;
