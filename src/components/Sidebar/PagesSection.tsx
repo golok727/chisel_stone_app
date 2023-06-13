@@ -1,5 +1,6 @@
 import "./pages_section_styles.css";
-import { DocumentIcon } from "@heroicons/react/24/solid";
+import { DocumentIcon } from "@heroicons/react/24/outline";
+import { DocumentIcon as DocumentIconSolid } from "@heroicons/react/24/solid";
 import {
 	ArrowsPointingInIcon,
 	ArrowsPointingOutIcon,
@@ -10,6 +11,7 @@ import { RootState } from "../../app/store";
 import Button from "../../Button";
 import { addPage, setCurrentPage } from "../../features/pagesSlice";
 import { toggleShowPages } from "../../features/appSlice";
+import { KeyboardEvent, useRef } from "react";
 
 const PagesSection = () => {
 	const { pages, showPages, currentPageId } = useSelector(
@@ -75,18 +77,32 @@ const PageSelector = ({
 	onClick,
 }: {
 	title: string;
-
 	isActive: boolean;
 	onClick?: () => void;
 }) => {
+	const btnRef = useRef<HTMLDivElement | null>(null);
+	const handleKeyDown = (ev: KeyboardEvent<HTMLDivElement>) => {
+		if (ev.key === "Enter" && btnRef.current) btnRef.current.click();
+	};
 	return (
 		<div
+			onContextMenu={(e) => {
+				e.preventDefault();
+			}}
+			ref={btnRef}
+			onKeyDown={handleKeyDown}
+			role="button"
+			tabIndex={0}
 			className={`pages_section__page flex gap-3 items-center ${
 				isActive ? "active" : ""
 			}`}
 			onClick={onClick}
 		>
-			<DocumentIcon width={17} style={{ marginInline: ".4rem" }} />
+			{!isActive ? (
+				<DocumentIcon width={17} style={{ marginInline: ".4rem" }} />
+			) : (
+				<DocumentIconSolid width={17} style={{ marginInline: ".4rem" }} />
+			)}
 			<span>{title}</span>
 		</div>
 	);

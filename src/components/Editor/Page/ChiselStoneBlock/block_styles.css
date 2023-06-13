@@ -1,9 +1,18 @@
 .page__block {
 	padding: var(--pad-xy-sm);
 	display: flex;
+	gap: 0.6em;
 	align-items: center;
 	max-width: 100%;
+	border: 1px solid transparent;
+	border-radius: var(--border-radius-sm);
+	outline: none;
+	transition: border 0.2s ease;
 }
+.page__block:focus {
+	border-color: hsla(0, 0%, 100%, 0.1);
+}
+
 .page__block:focus .page__block__actions,
 .page__block:focus-within .page__block__actions,
 .page__block:hover .page__block__actions {
@@ -38,8 +47,8 @@
 	/* padding: var(--pad-xy-md); */
 	border: none;
 	outline: none;
-	position: relative;
 	max-width: 100%;
+	position: relative;
 }
 
 .page__block__editable_div.empty:focus::after {

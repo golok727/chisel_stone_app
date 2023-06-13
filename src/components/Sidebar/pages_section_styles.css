@@ -37,10 +37,14 @@
 	margin: 0.2em 0;
 	cursor: pointer;
 	line-height: 1;
+	border: 1px solid transparent;
 	transition: background 0.2s ease, color 0.02s ease;
 }
-
-.pages_section__page:hover {
+.pages_section__page:focus {
+	outline: none;
+}
+.pages_section__page:hover,
+.pages_section__page:focus {
 	color: hsl(0, 0%, 100%);
 	background-color: var(--clr-light-text);
 }
