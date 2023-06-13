@@ -8,6 +8,7 @@ import {
 	DocumentIcon,
 	PlusIcon,
 } from "@heroicons/react/24/outline";
+import EditorMain from "./EditorMain";
 const Page = () => {
 	const { pages, currentPageId } = useSelector(({ page }: RootState) => ({
 		pages: page.pages,
@@ -18,8 +19,11 @@ const Page = () => {
 			{pages && pages.length > 0 && currentPageId ? (
 				<div className="editor__page-container">
 					<Header />
+					<EditorMain />
 				</div>
 			) : (
+				// Empty Notebook
+
 				<div className="editor__no_pages">
 					<h4>
 						Please select a page <br /> or make a new page to get Started
