@@ -41,6 +41,49 @@ const pageSlice = createSlice({
 				page.title = newTitle;
 			}
 		},
+
+		addNewBlock: (
+			state,
+			action: PayloadAction<{
+				blockId?: string;
+				insertMode?: "before" | "after";
+			}>
+		) => {
+			if (state.currentPageId) {
+				const currentPage = state.pages.find(
+					(page) => page._id === state.currentPageId
+				);
+				if (!currentPage) return;
+				const { blockId } = action.payload;
+
+				const newEmptyBlock: TextBlock = {
+					id: Date.now().toString(),
+					type: "text",
+					content: "",
+				};
+
+				if (blockId === undefined) {
+					currentPage.content.unshift(newEmptyBlock);
+					return;
+				}
+				const foundBlockIndex = currentPage.content.findIndex(
+					(eachBlock) => eachBlock.id === blockId
+				);
+
+				if (foundBlockIndex === -1) return;
+
+				// Insert Before or after
+				const insertMode: "before" | "after" =
+					action.payload.insertMode === undefined
+						? "after"
+						: action.payload.insertMode;
+				if (insertMode === "after") {
+					currentPage.content.splice(foundBlockIndex + 1, 0, newEmptyBlock);
+				} else {
+					currentPage.content.splice(foundBlockIndex, 0, newEmptyBlock);
+				}
+			}
+		},
 	},
 });
 
@@ -53,6 +96,7 @@ export const getCurrentPage = (state: { page: PagesState }) => {
 	}
 	return null;
 };
-export const { addPage, setCurrentPage, updatePageTitle } = pageSlice.actions;
+export const { addPage, setCurrentPage, updatePageTitle, addNewBlock } =
+	pageSlice.actions;
 
 export default pageSlice.reducer;
