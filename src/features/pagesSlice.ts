@@ -16,6 +16,7 @@ const pageSlice = createSlice({
 	name: "page",
 	initialState,
 	reducers: {
+		// Add a new page
 		addPage: (state) => {
 			const newPage = {
 				_id: `${Math.floor(Math.random() * 1000)}${Date.now()}`,
@@ -31,6 +32,7 @@ const pageSlice = createSlice({
 			state.currentPageId = action.payload;
 		},
 
+		// Update the page title
 		updatePageTitle: (
 			state,
 			action: PayloadAction<{ pageId: string; newTitle: string }>
@@ -42,6 +44,7 @@ const pageSlice = createSlice({
 			}
 		},
 
+		// Add new Block
 		addNewBlock: (
 			state,
 			action: PayloadAction<{
@@ -84,6 +87,30 @@ const pageSlice = createSlice({
 				}
 			}
 		},
+
+		// Update the new block value
+
+		updateBlock: (
+			state,
+			action: PayloadAction<{ block: Block; content: string }>
+		) => {
+			if (state.currentPageId) {
+				const currentPage = state.pages.find(
+					(page) => page._id === state.currentPageId
+				);
+				if (!currentPage) return;
+
+				if (action.payload.block.type === "text") {
+					const { block, content } = action.payload;
+					const updatedBlock = currentPage.content.find(
+						(eachBlock) => eachBlock.id === block.id
+					);
+					if (updatedBlock) {
+						updatedBlock.content = content;
+					}
+				}
+			}
+		},
 	},
 });
 
@@ -96,7 +123,12 @@ export const getCurrentPage = (state: { page: PagesState }) => {
 	}
 	return null;
 };
-export const { addPage, setCurrentPage, updatePageTitle, addNewBlock } =
-	pageSlice.actions;
+export const {
+	addPage,
+	setCurrentPage,
+	updatePageTitle,
+	addNewBlock,
+	updateBlock,
+} = pageSlice.actions;
 
 export default pageSlice.reducer;
