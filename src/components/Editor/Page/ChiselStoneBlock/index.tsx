@@ -29,13 +29,11 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 		if (ev.key === "Enter") {
 			if (ev.shiftKey) {
 				ev.preventDefault();
-				setBlockText(blockText + "\n");
-			} else {
-				ev.preventDefault();
 				blockEditorRef.current.blur();
-				const newText = blockEditorRef.current.textContent || "";
+				const newText = blockEditorRef.current.innerHTML || "";
 				setBlockText(newText);
 				dispatch(updateBlock({ block, content: newText }));
+			} else {
 			}
 		}
 	};
@@ -43,7 +41,7 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 		if (!blockEditorRef.current) {
 			return;
 		}
-		const newText = blockEditorRef.current.textContent || "";
+		const newText = blockEditorRef.current.innerHTML || "";
 		setBlockText(newText);
 		dispatch(updateBlock({ block, content: newText }));
 	};
@@ -51,7 +49,7 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 		(e: ContentEditableEvent) => {
 			console.log("change");
 			if (blockEditorRef.current) {
-				const newText = blockEditorRef.current.textContent || "";
+				const newText = blockEditorRef.current.innerHTML || "";
 				setBlockText(newText);
 			}
 		},
