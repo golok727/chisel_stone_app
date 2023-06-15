@@ -5,13 +5,20 @@ import {
 	DocumentIcon,
 } from "@heroicons/react/24/outline";
 import { emptyPageItems } from "../../../config/constants";
+import { useDispatch, useSelector } from "react-redux";
+import { addNewBlock } from "../../../features/pagesSlice";
 const EmptyPage = () => {
+	const thing = useSelector(() => {});
+	const dispatch = useDispatch();
+
 	return (
 		<div className="editor__empty_page">
 			<EmptyPageItem
 				title={"Empty Page"}
 				icon={<DocumentIcon width={17} />}
-				onClick={() => {}}
+				onClick={() => {
+					dispatch(addNewBlock({}));
+				}}
 			/>
 		</div>
 	);

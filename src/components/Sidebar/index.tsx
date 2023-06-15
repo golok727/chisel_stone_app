@@ -7,19 +7,20 @@ import { ChevronDoubleLeftIcon } from "@heroicons/react/24/outline";
 import { toggleSidebar } from "../../features/appSlice";
 import PagesSection from "./PagesSection";
 interface SideBarProps {
-	width: number;
 	setDragging: React.Dispatch<React.SetStateAction<boolean>>;
 	isDragging: boolean;
 	onResizerDown: MouseEventHandler<HTMLDivElement>;
 }
 
 const SideBar: React.FC<SideBarProps> = ({
-	width,
 	isDragging,
 	onResizerDown,
 	setDragging,
 }) => {
-	const showSidebar = useSelector((state: RootState) => state.app.showSidebar);
+	const { showSidebar, sidebarWidth } = useSelector((state: RootState) => ({
+		showSidebar: state.app.showSidebar,
+		sidebarWidth: state.app.sidebarWidth,
+	}));
 	const dispatch = useDispatch();
 	const closeSidebar = () => {
 		dispatch(toggleSidebar());
@@ -27,7 +28,7 @@ const SideBar: React.FC<SideBarProps> = ({
 	return (
 		<div
 			className={`app_sidebar ${!showSidebar ? "hidden" : ""}`}
-			style={{ width: `${width}px` }}
+			style={{ width: `${sidebarWidth}px` }}
 		>
 			{/* Header */}
 			<header>
