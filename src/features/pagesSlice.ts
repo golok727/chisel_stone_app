@@ -4,12 +4,14 @@ import { dummyPages } from "../config/constants";
 interface PagesState {
 	pages: ChiselStoneNotebookPage[];
 	currentPageId: string | null;
+	newBlock: string | null;
 }
 
 const initialState: PagesState = {
 	pages: [...dummyPages],
 	// pages: [],
 	currentPageId: null,
+	newBlock: null,
 };
 
 const pageSlice = createSlice({
@@ -85,6 +87,7 @@ const pageSlice = createSlice({
 				} else {
 					currentPage.content.splice(foundBlockIndex, 0, newEmptyBlock);
 				}
+				state.newBlock = newEmptyBlock.id;
 			}
 		},
 
@@ -111,6 +114,18 @@ const pageSlice = createSlice({
 				}
 			}
 		},
+		removeBlock: (state, action: PayloadAction<Block>) => {
+			if (state.currentPageId) {
+				const currentPage = state.pages.find(
+					(page) => page._id === state.currentPageId
+				);
+				if (!currentPage) return;
+
+				currentPage.content = currentPage.content.filter(
+					(eachBlock) => eachBlock.id !== action.payload.id
+				);
+			}
+		},
 	},
 });
 
@@ -129,6 +144,7 @@ export const {
 	updatePageTitle,
 	addNewBlock,
 	updateBlock,
+	removeBlock,
 } = pageSlice.actions;
 
 export default pageSlice.reducer;

@@ -24,7 +24,11 @@
 
 .pages_section__pages {
 	display: grid;
+	grid-auto-rows: minmax(3rem, auto);
 	gap: 0.3rem;
+	max-height: 30em;
+	overflow-y: auto;
+	padding: var(--pad-xy-md);
 }
 .pages_section__pages.collapsed {
 	display: none;
@@ -46,12 +50,14 @@
 .pages_section__page:hover,
 .pages_section__page:focus {
 	color: hsl(0, 0%, 100%);
-	background-color: var(--clr-light-text);
+	/* background-color: var(--clr-light-text); */
+
+	box-shadow: 0 0 3px #ff9500;
 }
 .pages_section__page.active {
-	color: var(--clr-secondary);
-	background-color: var(--clr-primary);
-	box-shadow: 0 0 5px #ff9500;
+	/* color: var(--clr-secondary); */
+	/* background-color: var(--clr-primary); */
+	box-shadow: 0 0 3px #ff9500;
 }
 
 .pages__no_pages {

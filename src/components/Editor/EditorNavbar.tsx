@@ -1,16 +1,15 @@
-import React from "react";
 import {
-	ChatBubbleBottomCenterIcon,
-	StarIcon,
-	EllipsisHorizontalCircleIcon,
 	Bars3Icon,
+	CloudIcon,
+	EllipsisHorizontalCircleIcon,
+	StarIcon,
 } from "@heroicons/react/24/outline";
-import "./editor_navbar_styles.css";
+import { useDispatch, useSelector } from "react-redux";
 import Button from "../../Button";
-import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
 import { toggleSidebar } from "../../features/appSlice";
 import { getCurrentPage } from "../../features/pagesSlice";
+import "./editor_navbar_styles.css";
 
 const EditorNavbar = () => {
 	const { appStatus, showSidebar } = useSelector((state: RootState) => ({
@@ -38,7 +37,7 @@ const EditorNavbar = () => {
 				<div className="flex gap-3">
 					<Button>Save</Button>
 					<Button>
-						<ChatBubbleBottomCenterIcon width={20} />
+						<CloudIcon width={20} />
 					</Button>
 
 					<Button>

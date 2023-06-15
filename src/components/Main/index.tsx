@@ -5,15 +5,19 @@ import Editor from "../Editor";
 import { getCurrentPage, setCurrentPage } from "../../features/pagesSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
+import { setSidebarWidth } from "../../features/appSlice";
 
 const Main = () => {
 	const currentPage = useSelector(getCurrentPage);
 	const pages = useSelector((state: RootState) => state.page.pages);
 	const dispatch = useDispatch();
 
+	const { sidebarWidth } = useSelector((state: RootState) => ({
+		sidebarWidth: state.app.sidebarWidth,
+	}));
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const [dragging, setDragging] = useState(false);
-	const [sidebarWidth, setSidebarWidth] = useState(250);
+
 	const handleMouseDown = (ev: MouseEvent<HTMLDivElement>) => {
 		ev.preventDefault();
 		setDragging(true);
@@ -29,14 +33,14 @@ const Main = () => {
 
 		const mouseX = ev.pageX;
 
-		const minSidebarWidth = 250; // Minimum width for the sidebar
-		const maxSidebarWidth = 500; // Maximum width for the sidebar
+		const minSidebarWidth = 250;
+		const maxSidebarWidth = 500;
 
 		const newSidebarWidth = Math.max(
 			minSidebarWidth,
 			Math.min(maxSidebarWidth, mouseX - containerRef.current.offsetLeft)
 		);
-		setSidebarWidth(newSidebarWidth);
+		dispatch(setSidebarWidth(newSidebarWidth));
 	};
 
 	useLayoutEffect(() => {
@@ -58,7 +62,6 @@ const Main = () => {
 			>
 				<SideBar
 					isDragging={dragging}
-					width={sidebarWidth}
 					setDragging={setDragging}
 					onResizerDown={handleMouseDown}
 				/>
