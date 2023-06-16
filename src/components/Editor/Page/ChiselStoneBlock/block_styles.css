@@ -1,9 +1,9 @@
 .page__block {
-	padding: var(--pad-xy-sm);
 	display: flex;
 	gap: 0.6em;
 	align-items: center;
 	max-width: 100%;
+	padding: 0.2em 0.2em;
 	border: 1px solid transparent;
 	border-radius: var(--border-radius-sm);
 	outline: none;
@@ -26,12 +26,13 @@
 	opacity: 0;
 }
 .page__block__actions-move {
-	padding: 0.5rem 0.4rem;
+	padding: 0.2rem 0.4rem;
 	background: transparent;
 	border-radius: 10px;
 	border: none;
 	color: var(--clr-btn-text-gray);
 	cursor: grab;
+	margin: 0.2rem 0;
 	user-select: none;
 	display: flex;
 	align-items: center;
@@ -44,11 +45,30 @@
 .page__block__editable_div {
 	flex: 1;
 	font-size: 1rem;
-	/* padding: var(--pad-xy-md); */
+	padding: 0.2rem 0;
 	border: none;
 	outline: none;
 	max-width: 100%;
 	position: relative;
+}
+
+.page__block__editable_div.type-text {
+	font-size: 1rem;
+}
+
+.page__block__editable_div.type-h1,
+.page__block__editable_div.type-h1.empty:focus::after {
+	font-size: 2rem;
+}
+
+.page__block__editable_div.type-h2,
+.page__block__editable_div.type-h2.empty:focus::after {
+	font-size: 1.7rem;
+}
+
+.page__block__editable_div.type-h3,
+.page__block__editable_div.type-h3.empty:focus::after {
+	font-size: 1.3rem;
 }
 
 .page__block__editable_div.empty:focus::after {

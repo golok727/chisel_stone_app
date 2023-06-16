@@ -1,5 +1,23 @@
 import { MouseEventHandler, ReactNode } from "react";
 import { DocumentIcon } from "@heroicons/react/24/outline";
+type BlockWithContent<T> = Extract<Block, { content: T }>;
+type ExcludeBlocksWithContent<T> = Exclude<
+	Block["type"],
+	BlockWithContent<T>["type"]
+>;
+
+export const isTextTypeBlock = (
+	block: Block
+): block is Extract<Block, { content: string }> => {
+	return typeof block.content === "string";
+};
+export type StringContentBlockTypes = BlockWithContent<string>["type"];
+export const textBlockTypes: StringContentBlockTypes[] = [
+	"text",
+	"h1",
+	"h2",
+	"h3",
+];
 
 export const dummyPages: ChiselStoneNotebookPage[] = [
 	{
@@ -9,30 +27,30 @@ export const dummyPages: ChiselStoneNotebookPage[] = [
 		content: [
 			{
 				id: "122",
-				type: "text",
-				content: "Radhey Shyam",
+				type: "h1",
+				content: "Radhey Shyam I love krsna",
 			},
 			{
 				id: "asdasd122",
-				type: "text",
-				content: "I love krsna",
+				type: "h1",
+				content: "Heading 1",
 			},
 
 			// Add more content items here
 			{
 				id: "234",
-				type: "text",
-				content: "Content 3",
+				type: "h2",
+				content: "Heading 2",
 			},
 			{
 				id: "345",
-				type: "text",
-				content: "Content 4",
+				type: "h3",
+				content: "Heading 3",
 			},
 			{
 				id: "456",
 				type: "text",
-				content: "Content 5",
+				content: "Normal Text",
 			},
 		],
 	},

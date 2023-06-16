@@ -1,3 +1,4 @@
+import "./block_styles.css";
 import { PlusIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 import React, {
 	MouseEvent,
@@ -15,11 +16,17 @@ import {
 	removeBlock,
 	updateBlock,
 } from "../../../../features/pagesSlice";
-import "./block_styles.css";
+import {
+	StringContentBlockTypes,
+	isTextTypeBlock,
+	textBlockTypes,
+} from "../../../../config/constants";
 
 const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 	const [blockText, setBlockText] = useState(() =>
-		block.type === "text" ? block.content : ""
+		isTextTypeBlock(block) && textBlockTypes.includes(block.type)
+			? block.content
+			: ""
 	);
 	const { newBlockId } = useSelector((state: RootState) => ({
 		newBlockId: state.page.newBlock,
@@ -97,6 +104,47 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 			}
 	}, [block.id]);
 
+	const getClassNamesForTextBlocks = useCallback(
+		(blockType: StringContentBlockTypes): string => {
+			switch (blockType) {
+				case "text":
+					return "type-text";
+				case "h1":
+					return "type-h1";
+
+				case "h2":
+					return "type-h2";
+
+				case "h3":
+					return "type-h3";
+
+				default:
+					return "";
+			}
+		},
+		[]
+	);
+	const getPlaceHolderTextForTextBlocks = useCallback(
+		(blockType: StringContentBlockTypes): string => {
+			switch (blockType) {
+				case "text":
+					return "Press '/' for commands...";
+				case "h1":
+					return "Heading 1";
+
+				case "h2":
+					return "Heading 2";
+
+				case "h3":
+					return "Heading 3";
+
+				default:
+					return "";
+			}
+		},
+		[]
+	);
+
 	return (
 		<div className="page__block" tabIndex={0} data-block-id={block.id}>
 			<div className="page__block__actions">
@@ -109,17 +157,17 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 			</div>
 
 			{/*  For Text Block */}
-			{block.type === "text" && (
+			{isTextTypeBlock(block) && textBlockTypes.includes(block.type) && (
 				<ContentEditable
 					onBlur={handleOnBlur}
 					onKeyDown={handleKeyDown}
-					data-placeholder="Press '/' for commands..."
+					data-placeholder={getPlaceHolderTextForTextBlocks(block.type)}
 					onChange={handleTextBlockInput}
 					html={blockText}
 					innerRef={blockEditorRef}
-					className={`page__block__editable_div ${
-						blockText === "" ? "empty" : ""
-					}`}
+					className={`page__block__editable_div ${getClassNamesForTextBlocks(
+						block.type
+					)} ${blockText === "" ? "empty" : ""}`}
 				/>
 			)}
 		</div>

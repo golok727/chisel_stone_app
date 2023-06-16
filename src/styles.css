@@ -31,8 +31,8 @@
 	--clr-light-text: #5e5e5e;
 	--clr-sidebar-hover-background: #242424;
 
-	--pad-xy-sm: 0.2rem 0.5rem;
-	--pad-xy-md: 0.6rem 0.5rem;
+	--pad-xy-sm: 0.2em 0.5em;
+	--pad-xy-md: 0.6em 0.5em;
 	--border-radius-xs: 5px;
 	--border-radius-sm: 10px;
 	--shadow-sm: 0 3px 10px rgba(0, 0, 0, 0.1);

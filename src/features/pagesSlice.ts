@@ -1,3 +1,4 @@
+import { StringContentBlockTypes, textBlockTypes } from "./../config/constants";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { dummyPages } from "../config/constants";
 
@@ -103,7 +104,11 @@ const pageSlice = createSlice({
 				);
 				if (!currentPage) return;
 
-				if (action.payload.block.type === "text") {
+				if (
+					textBlockTypes.includes(
+						action.payload.block.type as StringContentBlockTypes
+					)
+				) {
 					const { block, content } = action.payload;
 					const updatedBlock = currentPage.content.find(
 						(eachBlock) => eachBlock.id === block.id
