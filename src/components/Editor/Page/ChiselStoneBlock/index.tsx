@@ -9,6 +9,7 @@ import React, {
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useDispatch, useSelector } from "react-redux";
 import Button from "../../../../Button";
+
 import { RootState } from "../../../../app/store";
 import {
 	StringContentBlockTypes,
@@ -30,24 +31,28 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	block,
 	idx,
 }) => {
+	const dispatch = useDispatch();
 	const [blockText, setBlockText] = useState(() =>
 		isTextTypeBlock(block) && textBlockTypes.includes(block.type)
 			? block.content
 			: ""
 	);
 
-	const { newBlockId, currentFocusBlockIdx } = useSelector(
-		(state: RootState) => ({
-			newBlockId: state.page.newBlock,
-			currentFocusBlockIdx: state.app.currentFocusBlockIdx,
-			currentPageId: state.page.currentPageId,
-		})
+	const { newBlockId } = useSelector((state: RootState) => ({
+		newBlockId: state.page.newBlock,
+		currentPageId: state.page.currentPageId,
+	}));
+
+	const currentFocusBlockIdx = useSelector(
+		(state: RootState) => state.app.currentFocusBlockIdx
 	);
+
+	const currentFocusBlockIdxRef = useRef<number>(currentFocusBlockIdx);
+	currentFocusBlockIdxRef.current = currentFocusBlockIdx;
 
 	const currentPage = useSelector(getCurrentPage);
 
 	const blockEditorRef = useRef<HTMLElement | null>(null);
-	const dispatch = useDispatch();
 
 	// Handle new block add
 	const handleAddBlock = (e: MouseEvent<HTMLButtonElement>) => {
@@ -76,7 +81,7 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 		}
 		const newText = blockEditorRef.current.innerHTML || "";
 		dispatch(updateBlock({ block, content: newText }));
-	}, [dispatch, updateBlock]);
+	}, [dispatch, updateBlock, block]);
 
 	// Handle text input
 	const handleTextBlockInput = useCallback(
@@ -101,12 +106,12 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 			const blocksLength = currentPage.content.length;
 
 			const step = ev.key === "ArrowDown" ? 1 : -1;
-
 			const focusBlock = Math.min(
-				Math.max(0, currentFocusBlockIdx + step),
+				Math.max(0, currentFocusBlockIdxRef.current + step),
 				blocksLength - 1
 			);
 			dispatch(setCurrentFocusBlockIdx(focusBlock));
+			return;
 		}
 
 		if (ev.key === "Enter") {
@@ -131,6 +136,10 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	const handleFocus = () => {
 		dispatch(setCurrentFocusBlockIdx(idx));
 	};
+	// Set the currentFocusBlockIdx
+	useEffect(() => {
+		currentFocusBlockIdxRef.current = currentFocusBlockIdx;
+	}, [currentFocusBlockIdx]);
 
 	// Handle focus for new blocks
 	useEffect(() => {
@@ -139,6 +148,11 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 				blockEditorRef.current.focus();
 			}
 	}, [block.id]);
+
+	useEffect(() => {
+		if (!blockEditorRef.current) return;
+		if (currentFocusBlockIdx === idx) blockEditorRef.current.focus();
+	}, [currentFocusBlockIdx]);
 
 	const getClassNamesForTextBlocks = useCallback(
 		(blockType: StringContentBlockTypes): string => {

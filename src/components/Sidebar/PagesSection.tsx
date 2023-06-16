@@ -11,12 +11,14 @@ import { RootState } from "../../app/store";
 import Button from "../../Button";
 import { addPage, setCurrentPage } from "../../features/pagesSlice";
 import {
+	setCurrentFocusBlockIdx,
 	setCurrentFocusPageIdx,
 	toggleShowPages,
 } from "../../features/appSlice";
 import { KeyboardEvent, useEffect, useRef } from "react";
 
 const PagesSection = () => {
+	const dispatch = useDispatch();
 	const { pages, showPages, currentPageId } = useSelector(
 		(state: RootState) => ({
 			pages: state.page.pages,
@@ -24,7 +26,6 @@ const PagesSection = () => {
 			currentPageId: state.page.currentPageId,
 		})
 	);
-	const dispatch = useDispatch();
 
 	const handleAddPage = () => {
 		dispatch(addPage());
@@ -115,6 +116,7 @@ const PageSelector = ({
 			);
 
 			dispatch(setCurrentFocusPageIdx(focusPage));
+			dispatch(setCurrentFocusBlockIdx(0));
 		}
 	};
 	const dispatch = useDispatch();
