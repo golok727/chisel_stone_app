@@ -5,7 +5,10 @@ import Editor from "../Editor";
 import { getCurrentPage, setCurrentPage } from "../../features/pagesSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import { setSidebarWidth } from "../../features/appSlice";
+import {
+	setCurrentFocusPageIdx,
+	setSidebarWidth,
+} from "../../features/appSlice";
 
 const Main = () => {
 	const currentPage = useSelector(getCurrentPage);
@@ -47,6 +50,7 @@ const Main = () => {
 		if (!currentPage) {
 			if (pages.length > 0) {
 				dispatch(setCurrentPage(pages[0]._id));
+				dispatch(setCurrentFocusPageIdx(0));
 			}
 		}
 	}, [currentPage, dispatch, setCurrentPage]);

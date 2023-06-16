@@ -15,7 +15,6 @@ import {
 	toggleShowPages,
 } from "../../features/appSlice";
 import { KeyboardEvent, useEffect, useRef } from "react";
-import { P } from "@tauri-apps/api/event-30ea0228";
 
 const PagesSection = () => {
 	const { pages, showPages, currentPageId } = useSelector(
@@ -125,8 +124,7 @@ const PageSelector = ({
 	};
 
 	useEffect(() => {
-		if (currentFocusPageIdx === null || !btnRef.current) return;
-
+		if (!btnRef.current) return;
 		if (currentFocusPageIdx === idx) btnRef.current.focus();
 	}, [currentFocusPageIdx]);
 	const handleBlur = () => {};

@@ -1,4 +1,3 @@
-import "./block_styles.css";
 import { PlusIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 import React, {
 	MouseEvent,
@@ -12,25 +11,41 @@ import { useDispatch, useSelector } from "react-redux";
 import Button from "../../../../Button";
 import { RootState } from "../../../../app/store";
 import {
-	addNewBlock,
-	removeBlock,
-	updateBlock,
-} from "../../../../features/pagesSlice";
-import {
 	StringContentBlockTypes,
 	isTextTypeBlock,
 	textBlockTypes,
 } from "../../../../config/constants";
+import { setCurrentFocusBlockIdx } from "../../../../features/appSlice";
+import {
+	addNewBlock,
+	getCurrentPage,
+	removeBlock,
+	updateBlock,
+} from "../../../../features/pagesSlice";
+import "./block_styles.css";
 
-const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
+// TODO only update if the block content changed
+
+const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
+	block,
+	idx,
+}) => {
 	const [blockText, setBlockText] = useState(() =>
 		isTextTypeBlock(block) && textBlockTypes.includes(block.type)
 			? block.content
 			: ""
 	);
-	const { newBlockId } = useSelector((state: RootState) => ({
-		newBlockId: state.page.newBlock,
-	}));
+
+	const { newBlockId, currentFocusBlockIdx } = useSelector(
+		(state: RootState) => ({
+			newBlockId: state.page.newBlock,
+			currentFocusBlockIdx: state.app.currentFocusBlockIdx,
+			currentPageId: state.page.currentPageId,
+		})
+	);
+
+	const currentPage = useSelector(getCurrentPage);
+
 	const blockEditorRef = useRef<HTMLElement | null>(null);
 	const dispatch = useDispatch();
 
@@ -41,27 +56,6 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 		} else dispatch(addNewBlock({ blockId: block.id, insertMode: "after" }));
 	};
 
-	// Handle Keydown
-	const handleKeyDown = (ev: React.KeyboardEvent<HTMLDivElement>) => {
-		if (!blockEditorRef.current) return;
-
-		if (ev.key === "Enter") {
-			if (!ev.shiftKey) {
-				ev.preventDefault();
-				blockEditorRef.current.blur();
-				const newText = blockEditorRef.current.innerHTML || "";
-				setBlockText(newText);
-				dispatch(updateBlock({ block, content: newText }));
-			}
-		}
-		// Remove the block if the block has no content and the event key is Backspace
-		if (ev.key === "Backspace") {
-			if (blockEditorRef.current.textContent === "") {
-				dispatch(removeBlock(block));
-				// Todo add history functionality
-			}
-		}
-	};
 	// Add "Add functionality" for keyboard navigators
 	const handleAddButtonKeyDown = (
 		ev: React.KeyboardEvent<HTMLButtonElement>
@@ -76,14 +70,13 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 	};
 
 	// Update state when out of focus
-	const handleOnBlur = () => {
+	const handleOnBlur = useCallback(() => {
 		if (!blockEditorRef.current) {
 			return;
 		}
 		const newText = blockEditorRef.current.innerHTML || "";
-		setBlockText(newText);
 		dispatch(updateBlock({ block, content: newText }));
-	};
+	}, [dispatch, updateBlock]);
 
 	// Handle text input
 	const handleTextBlockInput = useCallback(
@@ -95,6 +88,49 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 		},
 		[setBlockText, blockEditorRef]
 	);
+
+	// keyBoardNavigation For blocks
+
+	// Handle Keydown
+	const handleKeyDown = (ev: React.KeyboardEvent<HTMLDivElement>) => {
+		if (!blockEditorRef.current) return;
+
+		if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+			ev.preventDefault();
+			if (!currentPage) return;
+			const blocksLength = currentPage.content.length;
+
+			const step = ev.key === "ArrowDown" ? 1 : -1;
+
+			const focusBlock = Math.min(
+				Math.max(0, currentFocusBlockIdx + step),
+				blocksLength - 1
+			);
+			dispatch(setCurrentFocusBlockIdx(focusBlock));
+		}
+
+		if (ev.key === "Enter") {
+			if (!ev.shiftKey) {
+				ev.preventDefault();
+				blockEditorRef.current.blur();
+				const newText = blockEditorRef.current.innerHTML || "";
+				setBlockText(newText);
+				dispatch(updateBlock({ block, content: newText }));
+				dispatch(addNewBlock({ blockId: block.id, insertMode: "after" }));
+			}
+		}
+		// Remove the block if the block has no content and the event key is Backspace
+		if (ev.key === "Backspace") {
+			if (blockEditorRef.current.textContent === "") {
+				dispatch(removeBlock(block));
+				// Todo add history functionality
+			}
+		}
+	};
+
+	const handleFocus = () => {
+		dispatch(setCurrentFocusBlockIdx(idx));
+	};
 
 	// Handle focus for new blocks
 	useEffect(() => {
@@ -146,7 +182,7 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 	);
 
 	return (
-		<div className="page__block" tabIndex={0} data-block-id={block.id}>
+		<div className="page__block" tabIndex={-1} data-block-id={block.id}>
 			<div className="page__block__actions">
 				<Button onClick={handleAddBlock} onKeyDown={handleAddButtonKeyDown}>
 					<PlusIcon width={17} />
@@ -159,6 +195,7 @@ const ChiselStoneBlock: React.FC<{ block: Block }> = ({ block }) => {
 			{/*  For Text Block */}
 			{isTextTypeBlock(block) && textBlockTypes.includes(block.type) && (
 				<ContentEditable
+					onFocus={handleFocus}
 					onBlur={handleOnBlur}
 					onKeyDown={handleKeyDown}
 					data-placeholder={getPlaceHolderTextForTextBlocks(block.type)}
