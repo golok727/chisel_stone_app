@@ -10,8 +10,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import Button from "../../Button";
 import { addPage, setCurrentPage } from "../../features/pagesSlice";
-import { toggleShowPages } from "../../features/appSlice";
-import { KeyboardEvent, useRef } from "react";
+import {
+	setCurrentFocusPageIdx,
+	toggleShowPages,
+} from "../../features/appSlice";
+import { KeyboardEvent, useEffect, useRef } from "react";
+import { P } from "@tauri-apps/api/event-30ea0228";
 
 const PagesSection = () => {
 	const { pages, showPages, currentPageId } = useSelector(
@@ -22,6 +26,7 @@ const PagesSection = () => {
 		})
 	);
 	const dispatch = useDispatch();
+
 	const handleAddPage = () => {
 		dispatch(addPage());
 		dispatch(toggleShowPages(true));
@@ -29,6 +34,7 @@ const PagesSection = () => {
 	const handlePagesVisibilityToggle = () => {
 		dispatch(toggleShowPages());
 	};
+
 	return (
 		<section className="sidebar__pages_section">
 			<header>
@@ -56,8 +62,9 @@ const PagesSection = () => {
 					pages.map((page, idx) => (
 						<PageSelector
 							isActive={page._id === currentPageId}
-							key={idx}
+							key={page._id}
 							title={page.title}
+							idx={idx}
 							onClick={() => dispatch(setCurrentPage(page._id))}
 						/>
 					))
@@ -74,18 +81,59 @@ export default PagesSection;
 const PageSelector = ({
 	isActive,
 	title,
+	idx,
 	onClick,
 }: {
 	title: string;
+	idx: number;
 	isActive: boolean;
 	onClick?: () => void;
 }) => {
 	const btnRef = useRef<HTMLDivElement | null>(null);
+	const { pagesLength, currentFocusPageIdx } = useSelector(
+		(state: RootState) => ({
+			pagesLength: state.page.pages.length,
+			currentFocusPageIdx: state.app.currentFocusPageIdx,
+		})
+	);
+
 	const handleKeyDown = (ev: KeyboardEvent<HTMLDivElement>) => {
+		if (currentFocusPageIdx === null) return;
 		if (ev.key === "Enter" && btnRef.current) btnRef.current.click();
+
+		if (
+			ev.key === "ArrowDown" ||
+			ev.key === "ArrowUp" ||
+			ev.key.toLowerCase() === "w" ||
+			ev.key.toLowerCase() === "s"
+		) {
+			const step =
+				ev.key === "ArrowDown" || ev.key.toLowerCase() === "s" ? 1 : -1;
+
+			const focusPage = Math.min(
+				Math.max(0, currentFocusPageIdx + step),
+				pagesLength - 1
+			);
+
+			dispatch(setCurrentFocusPageIdx(focusPage));
+		}
 	};
+	const dispatch = useDispatch();
+
+	const handleFocus = () => {
+		dispatch(setCurrentFocusPageIdx(idx));
+	};
+
+	useEffect(() => {
+		if (currentFocusPageIdx === null || !btnRef.current) return;
+
+		if (currentFocusPageIdx === idx) btnRef.current.focus();
+	}, [currentFocusPageIdx]);
+	const handleBlur = () => {};
 	return (
 		<div
+			onFocus={handleFocus}
+			onBlur={handleBlur}
 			onContextMenu={(e) => {
 				e.preventDefault();
 			}}
