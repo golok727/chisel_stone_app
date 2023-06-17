@@ -1,21 +1,23 @@
-/* .editor__page {
-} */
+.editor__page {
+	position: relative;
+}
 .editor__page-container {
 	margin-inline: auto;
 	max-width: 70%;
 	padding: 1rem 0;
 }
 .editor__no_pages {
+	position: absolute;
 	display: flex;
 	flex-direction: column;
 	cursor: help;
 	color: var(--clr-btn-hover-background);
+	align-items: center;
 	justify-content: center;
-	height: 100%;
+	width: 100%;
+	margin: 3rem;
 	transition: color 0.2s ease;
-
 	margin-inline: auto;
-	max-width: 70%;
 }
 
 .editor__no_pages h4 {
