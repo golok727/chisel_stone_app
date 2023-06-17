@@ -13,6 +13,8 @@ import Button from "../../../../Button";
 import { RootState } from "../../../../app/store";
 import {
 	StringContentBlockTypes,
+	getClassNamesForTextBlocks,
+	getPlaceHolderTextForTextBlocks,
 	isTextTypeBlock,
 	textBlockTypes,
 } from "../../../../config/constants";
@@ -46,12 +48,12 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	const currentFocusBlockIdx = useSelector(
 		(state: RootState) => state.app.currentFocusBlockIdx
 	);
-
-	const currentFocusBlockIdxRef = useRef<number>(currentFocusBlockIdx);
-	currentFocusBlockIdxRef.current = currentFocusBlockIdx;
-
 	const currentPage = useSelector(getCurrentPage);
 
+	const currentFocusBlockIdxRef = useRef<number>(currentFocusBlockIdx);
+	const currentPageRef = useRef(currentPage);
+
+	currentFocusBlockIdxRef.current = currentFocusBlockIdx;
 	const blockEditorRef = useRef<HTMLElement | null>(null);
 
 	// Handle new block add
@@ -102,12 +104,11 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 
 		if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
 			ev.preventDefault();
-			if (!currentPage) return;
-			const blocksLength = currentPage.content.length;
-
+			if (!currentPageRef.current) return;
+			const blocksLength = currentPageRef.current.content.length;
 			const step = ev.key === "ArrowDown" ? 1 : -1;
 			const focusBlock = Math.min(
-				Math.max(0, currentFocusBlockIdxRef.current + step),
+				Math.max(-1, currentFocusBlockIdxRef.current + step),
 				blocksLength - 1
 			);
 			dispatch(setCurrentFocusBlockIdx(focusBlock));
@@ -154,46 +155,9 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 		if (currentFocusBlockIdx === idx) blockEditorRef.current.focus();
 	}, [currentFocusBlockIdx]);
 
-	const getClassNamesForTextBlocks = useCallback(
-		(blockType: StringContentBlockTypes): string => {
-			switch (blockType) {
-				case "text":
-					return "type-text";
-				case "h1":
-					return "type-h1";
-
-				case "h2":
-					return "type-h2";
-
-				case "h3":
-					return "type-h3";
-
-				default:
-					return "";
-			}
-		},
-		[]
-	);
-	const getPlaceHolderTextForTextBlocks = useCallback(
-		(blockType: StringContentBlockTypes): string => {
-			switch (blockType) {
-				case "text":
-					return "Press '/' for commands...";
-				case "h1":
-					return "Heading 1";
-
-				case "h2":
-					return "Heading 2";
-
-				case "h3":
-					return "Heading 3";
-
-				default:
-					return "";
-			}
-		},
-		[]
-	);
+	useEffect(() => {
+		currentPageRef.current = currentPage;
+	}, [currentPage]);
 
 	return (
 		<div className="page__block" tabIndex={-1} data-block-id={block.id}>

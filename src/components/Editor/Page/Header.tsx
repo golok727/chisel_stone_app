@@ -1,8 +1,9 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentPage, updatePageTitle } from "../../../features/pagesSlice";
 import "./header_styles.css";
+import { RootState } from "../../../app/store";
 const Header = () => {
 	const currentPage = useSelector(getCurrentPage);
 	const dispatch = useDispatch();

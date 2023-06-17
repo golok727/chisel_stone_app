@@ -19,6 +19,45 @@ export const textBlockTypes: StringContentBlockTypes[] = [
 	"h3",
 ];
 
+export const getClassNamesForTextBlocks = (
+	blockType: StringContentBlockTypes
+): string => {
+	switch (blockType) {
+		case "text":
+			return "type-text";
+		case "h1":
+			return "type-h1";
+
+		case "h2":
+			return "type-h2";
+
+		case "h3":
+			return "type-h3";
+
+		default:
+			return "";
+	}
+};
+export const getPlaceHolderTextForTextBlocks = (
+	blockType: StringContentBlockTypes
+): string => {
+	switch (blockType) {
+		case "text":
+			return "Press '/' for commands...";
+		case "h1":
+			return "Heading 1";
+
+		case "h2":
+			return "Heading 2";
+
+		case "h3":
+			return "Heading 3";
+
+		default:
+			return "";
+	}
+};
+
 export const dummyPages: ChiselStoneNotebookPage[] = [
 	{
 		_id: "1234",
