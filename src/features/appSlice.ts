@@ -8,8 +8,8 @@ interface AppState {
 	showPages: boolean;
 	sidebarWidth: number;
 	currentFocusPageIdx: number;
-
 	currentFocusBlockIdx: number;
+	cursorPosition: number;
 }
 
 const initialState: AppState = {
@@ -21,6 +21,7 @@ const initialState: AppState = {
 	sidebarWidth: 300,
 	currentFocusPageIdx: 0,
 	currentFocusBlockIdx: 0,
+	cursorPosition: 0,
 };
 
 const appSlice = createSlice({
@@ -52,6 +53,10 @@ const appSlice = createSlice({
 		setCurrentFocusBlockIdx: (state, action: PayloadAction<number>) => {
 			state.currentFocusBlockIdx = action.payload;
 		},
+
+		setCursorPosition: (state, action: PayloadAction<number>) => {
+			state.cursorPosition = action.payload;
+		},
 	},
 });
 
@@ -63,5 +68,6 @@ export const {
 	setSidebarWidth,
 	setCurrentFocusPageIdx,
 	setCurrentFocusBlockIdx,
+	setCursorPosition,
 } = appSlice.actions;
 export default appSlice.reducer;
