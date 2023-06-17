@@ -100,14 +100,12 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 			if (selection && selection.rangeCount > 0) {
 				const range = selection.getRangeAt(0);
 				const offset = range.startOffset;
-				console.log(offset);
 				dispatch(setCursorPosition(offset));
 			}
 
 			if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
 				ev.preventDefault();
 				const blocksLength = currentPageRef.current?.content.length || 0;
-				console.log(blocksLength);
 				const step = ev.key === "ArrowDown" ? 1 : -1;
 				const nextFocusBlock = Math.min(
 					Math.max(-1, currentFocusBlockIdxRef.current + step),
@@ -120,11 +118,10 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 				blockEditorRef.current.blur();
 
 				const newText = blockEditorRef.current.textContent || "";
-				setBlockText(newText);
+				// setBlockText(newText);
 				dispatch(updateBlock({ block, content: newText }));
 				dispatch(addNewBlock({ blockId: block.id, insertMode: "after" }));
 			} else if (ev.key === "Enter" && ev.shiftKey) {
-				console.log("Run");
 				const newText = blockEditorRef.current.textContent + "\n";
 				setBlockText(newText);
 			}
@@ -177,7 +174,6 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	);
 
 	const handleFocus = () => {
-		dispatch(setCurrentFocusBlockIdx(idx));
 		if (blockEditorRef.current) {
 			const selection = window.getSelection();
 			if (selection) {
@@ -239,6 +235,7 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	useEffect(() => {
 		currentPageRef.current = currentPage;
 	}, [currentPage]);
+	console.log("idx", idx);
 
 	return (
 		<div className="page__block" tabIndex={-1} data-block-id={block.id}>
