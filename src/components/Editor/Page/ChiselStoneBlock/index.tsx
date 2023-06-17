@@ -77,7 +77,7 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 
 	// Update state when out of focus
 	const handleOnBlur = useCallback(() => {
-		const newText = blockEditorRef.current?.innerHTML || "";
+		const newText = blockEditorRef.current?.textContent || "";
 		if (block.content !== newText)
 			dispatch(updateBlock({ block, content: newText }));
 	}, [dispatch, block]);
@@ -85,62 +85,95 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	// Handle text input
 	const handleTextBlockInput = useCallback(
 		(e: ContentEditableEvent) => {
-			const newText = blockEditorRef.current?.innerHTML || "";
+			const newText = blockEditorRef.current?.textContent || "";
 			setBlockText(newText);
 		},
 		[setBlockText]
 	);
 
 	// Handle Keydown
-	const handleKeyDown = (ev: React.KeyboardEvent<HTMLDivElement>) => {
-		if (!blockEditorRef.current) return;
-
-		if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
-			ev.preventDefault();
-			const blocksLength = currentPageRef.current?.content.length || 0;
-
-			const step = ev.key === "ArrowDown" ? 1 : -1;
-			const focusBlock = Math.min(
-				Math.max(-1, currentFocusBlockIdxRef.current + step),
-				blocksLength - 1
-			);
+	const handleKeyDown = useCallback(
+		(ev: React.KeyboardEvent<HTMLDivElement>) => {
+			if (!blockEditorRef.current) return;
 
 			const selection = window.getSelection();
 			if (selection && selection.rangeCount > 0) {
 				const range = selection.getRangeAt(0);
 				const offset = range.startOffset;
-				console.log(offset);
 				dispatch(setCursorPosition(offset));
 			}
-			dispatch(setCurrentFocusBlockIdx(focusBlock));
-		} else if (ev.key === "Enter" && !ev.shiftKey) {
-			ev.preventDefault();
-			blockEditorRef.current.blur();
 
-			const newText = blockEditorRef.current.innerHTML || "";
-			setBlockText(newText);
-			dispatch(updateBlock({ block, content: newText }));
-			dispatch(addNewBlock({ blockId: block.id, insertMode: "after" }));
-		}
-		// Remove the block if the block has no content and the event key is Backspace
-		else if (ev.key === "Backspace") {
-			if (blockEditorRef.current.textContent === "") {
-				dispatch(removeBlock(block));
-
-				dispatch(
-					setCurrentFocusBlockIdx(
-						Math.max(0, currentFocusBlockIdxRef.current - 1)
-					)
+			if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+				ev.preventDefault();
+				const blocksLength = currentPageRef.current?.content.length || 0;
+				const step = ev.key === "ArrowDown" ? 1 : -1;
+				const nextFocusBlock = Math.min(
+					Math.max(-1, currentFocusBlockIdxRef.current + step),
+					blocksLength - 1
 				);
-				// Todo add history functionality
+
+				dispatch(setCurrentFocusBlockIdx(nextFocusBlock));
+			} else if (ev.key === "Enter" && !ev.shiftKey) {
+				ev.preventDefault();
+				blockEditorRef.current.blur();
+
+				const newText = blockEditorRef.current.textContent || "";
+				// setBlockText(newText);
+				dispatch(updateBlock({ block, content: newText }));
+				dispatch(addNewBlock({ blockId: block.id, insertMode: "after" }));
+			} else if (ev.key === "Enter" && ev.shiftKey) {
+				const newText = blockEditorRef.current.textContent + "\n";
+				setBlockText(newText);
 			}
-		} else {
-			// Update cursor position in state for other key events
-		}
-	};
+
+			// Remove the block if the block has no content and the event key is Backspace
+			else if (ev.key === "Backspace") {
+				const precedingBlockIdx = Math.max(
+					0,
+					currentFocusBlockIdxRef.current - 1
+				);
+				const precedingBlock =
+					currentPageRef.current?.content[precedingBlockIdx];
+
+				if (blockEditorRef.current.textContent === "") {
+					ev.preventDefault();
+					dispatch(removeBlock(block));
+
+					// Todo add history functionality
+				} else {
+					if (cursorPositionRef.current !== 0) return;
+					ev.preventDefault();
+					if (!precedingBlock || !blockEditorRef.current.previousSibling)
+						return;
+
+					if (!isTextTypeBlock(precedingBlock)) return;
+
+					dispatch(
+						updateBlock({
+							block: precedingBlock,
+							content: `${precedingBlock.content}${
+								blockEditorRef.current.textContent ?? ""
+							}`,
+						})
+					);
+					dispatch(removeBlock(block));
+				}
+				if (precedingBlock && blockEditorRef.current.previousSibling) {
+					dispatch(setCursorPosition(precedingBlock.content.length));
+					dispatch(
+						setCurrentFocusBlockIdx(
+							Math.max(0, currentFocusBlockIdxRef.current - 1)
+						)
+					);
+				}
+			} else {
+				// Update cursor position in state for other key events
+			}
+		},
+		[dispatch]
+	);
 
 	const handleFocus = () => {
-		dispatch(setCurrentFocusBlockIdx(idx));
 		if (blockEditorRef.current) {
 			const selection = window.getSelection();
 			if (selection) {
@@ -161,15 +194,31 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 			}
 		}
 	};
+	const handleOnClick = useCallback(() => {
+		const selection = window.getSelection();
+		if (selection && selection.rangeCount > 0) {
+			const range = selection.getRangeAt(0);
+			const offset = range.startOffset;
+			dispatch(setCursorPosition(offset));
+		}
+	}, [dispatch]);
 
 	useEffect(() => {
 		cursorPositionRef.current = cursorPosition;
 	}, [cursorPosition]);
 
+	useEffect(() => {
+		setBlockText(() =>
+			isTextTypeBlock(block) && textBlockTypes.includes(block.type)
+				? block.content
+				: ""
+		);
+	}, [block]);
+
 	// Set the currentFocusBlockIdx
 	useEffect(() => {
 		currentFocusBlockIdxRef.current = currentFocusBlockIdx;
-	}, [currentFocusBlockIdx]);
+	}, [currentFocusBlockIdx, idx]);
 
 	// Handle focus for new blocks
 	useEffect(() => {
@@ -186,6 +235,7 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	useEffect(() => {
 		currentPageRef.current = currentPage;
 	}, [currentPage]);
+	console.log("idx", idx);
 
 	return (
 		<div className="page__block" tabIndex={-1} data-block-id={block.id}>
@@ -204,8 +254,10 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 					onFocus={handleFocus}
 					onBlur={handleOnBlur}
 					onKeyDown={handleKeyDown}
+					onClick={handleOnClick}
 					data-placeholder={getPlaceHolderTextForTextBlocks(block.type)}
 					onChange={handleTextBlockInput}
+					style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}
 					html={blockText}
 					innerRef={blockEditorRef}
 					className={`page__block__editable_div ${getClassNamesForTextBlocks(
