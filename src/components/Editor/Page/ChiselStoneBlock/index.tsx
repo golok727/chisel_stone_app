@@ -95,6 +95,14 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	const handleKeyDown = (ev: React.KeyboardEvent<HTMLDivElement>) => {
 		if (!blockEditorRef.current) return;
 
+		const selection = window.getSelection();
+		if (selection && selection.rangeCount > 0) {
+			const range = selection.getRangeAt(0);
+			const offset = range.startOffset;
+			console.log(offset);
+			dispatch(setCursorPosition(offset));
+		}
+
 		if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
 			ev.preventDefault();
 			const blocksLength = currentPageRef.current?.content.length || 0;
@@ -105,13 +113,6 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 				blocksLength - 1
 			);
 
-			const selection = window.getSelection();
-			if (selection && selection.rangeCount > 0) {
-				const range = selection.getRangeAt(0);
-				const offset = range.startOffset;
-				console.log(offset);
-				dispatch(setCursorPosition(offset));
-			}
 			dispatch(setCurrentFocusBlockIdx(focusBlock));
 		} else if (ev.key === "Enter" && !ev.shiftKey) {
 			ev.preventDefault();
@@ -125,7 +126,20 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 		// Remove the block if the block has no content and the event key is Backspace
 		else if (ev.key === "Backspace") {
 			if (blockEditorRef.current.textContent === "") {
+				ev.preventDefault();
 				dispatch(removeBlock(block));
+				const precedingBlockIdx = Math.max(
+					0,
+					currentFocusBlockIdxRef.current - 1
+				);
+				const precedingBlock =
+					currentPageRef.current?.content[precedingBlockIdx];
+
+				if (precedingBlock && blockEditorRef.current.previousSibling) {
+					const precedingBlockLineEnd = precedingBlock.content.length;
+
+					dispatch(setCursorPosition(precedingBlockLineEnd));
+				}
 
 				dispatch(
 					setCurrentFocusBlockIdx(
@@ -161,6 +175,15 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 			}
 		}
 	};
+	const handleOnClick = useCallback(() => {
+		const selection = window.getSelection();
+		if (selection && selection.rangeCount > 0) {
+			const range = selection.getRangeAt(0);
+			const offset = range.startOffset;
+			console.log(offset);
+			dispatch(setCursorPosition(offset));
+		}
+	}, [dispatch]);
 
 	useEffect(() => {
 		cursorPositionRef.current = cursorPosition;
@@ -204,6 +227,7 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 					onFocus={handleFocus}
 					onBlur={handleOnBlur}
 					onKeyDown={handleKeyDown}
+					onClick={handleOnClick}
 					data-placeholder={getPlaceHolderTextForTextBlocks(block.type)}
 					onChange={handleTextBlockInput}
 					html={blockText}
