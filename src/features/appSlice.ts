@@ -7,7 +7,9 @@ interface AppState {
 	appStatus: string;
 	showPages: boolean;
 	sidebarWidth: number;
-	currentFocusPageIdx: number | null;
+	currentFocusPageIdx: number;
+
+	currentFocusBlockIdx: number;
 }
 
 const initialState: AppState = {
@@ -17,7 +19,8 @@ const initialState: AppState = {
 	appStatus: "Up to Date",
 	showPages: true,
 	sidebarWidth: 300,
-	currentFocusPageIdx: null,
+	currentFocusPageIdx: 0,
+	currentFocusBlockIdx: 0,
 };
 
 const appSlice = createSlice({
@@ -43,8 +46,11 @@ const appSlice = createSlice({
 		setSidebarWidth: (state, action: PayloadAction<number>) => {
 			state.sidebarWidth = action.payload;
 		},
-		setCurrentFocusPageIdx: (state, action: PayloadAction<number | null>) => {
+		setCurrentFocusPageIdx: (state, action: PayloadAction<number>) => {
 			state.currentFocusPageIdx = action.payload;
+		},
+		setCurrentFocusBlockIdx: (state, action: PayloadAction<number>) => {
+			state.currentFocusBlockIdx = action.payload;
 		},
 	},
 });
@@ -56,5 +62,6 @@ export const {
 	toggleSidebar,
 	setSidebarWidth,
 	setCurrentFocusPageIdx,
+	setCurrentFocusBlockIdx,
 } = appSlice.actions;
 export default appSlice.reducer;

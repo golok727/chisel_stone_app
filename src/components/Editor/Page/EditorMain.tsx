@@ -11,8 +11,8 @@ const EditorMain = () => {
 		<main className="editor__main">
 			{/* Render the blocks */}
 			{currentPage && currentPage.content && currentPage.content.length > 0 ? (
-				currentPage.content.map((block) => (
-					<ChiselStoneBlock key={block.id} block={block} />
+				currentPage.content.map((block, idx) => (
+					<ChiselStoneBlock key={block.id} block={block} idx={idx} />
 				))
 			) : (
 				<EmptyPage />

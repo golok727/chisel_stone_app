@@ -18,7 +18,7 @@
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-text-size-adjust: 100%;
 
-	--clr-sidebar-background: rgb(29, 29, 29);
+	--clr-sidebar-background: rgb(26, 26, 26);
 	--clr-editor-background: #191919;
 	--clr-text: #cfcfcf;
 	--clr-background: #0c0f13;
@@ -29,10 +29,10 @@
 	--clr-btn-hover-background: #303030;
 	--clr-text-gray-dark: #383838;
 	--clr-light-text: #5e5e5e;
-	--clr-sidebar-hover-background: #242424;
+	--clr-sidebar-hover-background: #1f1f1f;
 
-	--pad-xy-sm: 0.2rem 0.5rem;
-	--pad-xy-md: 0.6rem 0.5rem;
+	--pad-xy-sm: 0.2em 0.5em;
+	--pad-xy-md: 0.6em 0.5em;
 	--border-radius-xs: 5px;
 	--border-radius-sm: 10px;
 	--shadow-sm: 0 3px 10px rgba(0, 0, 0, 0.1);

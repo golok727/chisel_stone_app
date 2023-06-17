@@ -4,5 +4,5 @@
 	position: relative;
 	/* background: url("/blob-scatter.svg") no-repeat center center / cover; */
 	height: 100vh;
-	overflow: hidden;
+	overflow: auto;
 }

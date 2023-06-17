@@ -12,6 +12,21 @@ interface Heading1 extends BaseBlock {
 	content: string;
 }
 
+interface Heading2 extends BaseBlock {
+	type: "h2";
+	content: string;
+}
+
+interface Heading3 extends BaseBlock {
+	type: "h3";
+	content: string;
+}
+
+interface Heading1 extends BaseBlock {
+	type: "h1";
+	content: string;
+}
+
 interface TableBlock extends BaseBlock {
 	type: "table";
 	content: string[][];
@@ -22,7 +37,13 @@ interface ListBlock extends BaseBlock {
 	content: string[];
 }
 
-type Block = TextBlock | TableBlock | ListBlock;
+type Block =
+	| TextBlock
+	| Heading1
+	| Heading2
+	| Heading3
+	| TableBlock
+	| ListBlock;
 
 interface ChiselStoneNotebookPage {
 	_id: string;
