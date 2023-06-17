@@ -1,3 +1,4 @@
+import "./block_styles.css";
 import { PlusIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 import React, {
 	MouseEvent,
@@ -17,14 +18,16 @@ import {
 	isTextTypeBlock,
 	textBlockTypes,
 } from "../../../../config/constants";
-import { setCurrentFocusBlockIdx } from "../../../../features/appSlice";
+import {
+	setCurrentFocusBlockIdx,
+	setCursorPosition,
+} from "../../../../features/appSlice";
 import {
 	addNewBlock,
 	getCurrentPage,
 	removeBlock,
 	updateBlock,
 } from "../../../../features/pagesSlice";
-import "./block_styles.css";
 
 const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	block,
@@ -33,10 +36,11 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	const dispatch = useDispatch();
 	const blockEditorRef = useRef<HTMLElement | null>(null);
 
-	const { newBlockId, currentFocusBlockIdx } = useSelector(
+	const { newBlockId, currentFocusBlockIdx, cursorPosition } = useSelector(
 		(state: RootState) => ({
 			newBlockId: state.page.newBlock,
 			currentFocusBlockIdx: state.app.currentFocusBlockIdx,
+			cursorPosition: state.app.cursorPosition,
 		})
 	);
 
@@ -44,6 +48,7 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 
 	const currentFocusBlockIdxRef = useRef<number>(currentFocusBlockIdx);
 	const currentPageRef = useRef(currentPage);
+	const cursorPositionRef = useRef<number>(cursorPosition);
 
 	const [blockText, setBlockText] = useState(() =>
 		isTextTypeBlock(block) && textBlockTypes.includes(block.type)
@@ -99,6 +104,14 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 				Math.max(-1, currentFocusBlockIdxRef.current + step),
 				blocksLength - 1
 			);
+
+			const selection = window.getSelection();
+			if (selection && selection.rangeCount > 0) {
+				const range = selection.getRangeAt(0);
+				const offset = range.startOffset;
+				console.log(offset);
+				dispatch(setCursorPosition(offset));
+			}
 			dispatch(setCurrentFocusBlockIdx(focusBlock));
 		} else if (ev.key === "Enter" && !ev.shiftKey) {
 			ev.preventDefault();
@@ -121,12 +134,38 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 				);
 				// Todo add history functionality
 			}
+		} else {
+			// Update cursor position in state for other key events
 		}
 	};
 
 	const handleFocus = () => {
 		dispatch(setCurrentFocusBlockIdx(idx));
+		if (blockEditorRef.current) {
+			const selection = window.getSelection();
+			if (selection) {
+				const range = document.createRange();
+				const contentLength = blockEditorRef.current.textContent?.length || 0;
+				let startPosition = cursorPositionRef.current;
+				const firstChildNode = blockEditorRef.current.firstChild;
+				if (firstChildNode instanceof Node) {
+					startPosition = Math.min(startPosition, contentLength);
+					range.setStart(firstChildNode, startPosition);
+				} else {
+					startPosition = contentLength;
+					range.setStart(blockEditorRef.current, startPosition);
+				}
+				range.collapse(true);
+				selection.removeAllRanges();
+				selection.addRange(range);
+			}
+		}
 	};
+
+	useEffect(() => {
+		cursorPositionRef.current = cursorPosition;
+	}, [cursorPosition]);
+
 	// Set the currentFocusBlockIdx
 	useEffect(() => {
 		currentFocusBlockIdxRef.current = currentFocusBlockIdx;
