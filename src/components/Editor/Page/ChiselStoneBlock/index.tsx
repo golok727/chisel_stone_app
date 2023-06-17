@@ -92,47 +92,45 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	);
 
 	// Handle Keydown
-	const handleKeyDown = (ev: React.KeyboardEvent<HTMLDivElement>) => {
-		if (!blockEditorRef.current) return;
+	const handleKeyDown = useCallback(
+		(ev: React.KeyboardEvent<HTMLDivElement>) => {
+			if (!blockEditorRef.current) return;
 
-		const selection = window.getSelection();
-		if (selection && selection.rangeCount > 0) {
-			const range = selection.getRangeAt(0);
-			const offset = range.startOffset;
-			console.log(offset);
-			dispatch(setCursorPosition(offset));
-		}
+			const selection = window.getSelection();
+			if (selection && selection.rangeCount > 0) {
+				const range = selection.getRangeAt(0);
+				const offset = range.startOffset;
+				console.log(offset);
+				dispatch(setCursorPosition(offset));
+			}
 
-		if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
-			ev.preventDefault();
-			const blocksLength = currentPageRef.current?.content.length || 0;
-
-			const step = ev.key === "ArrowDown" ? 1 : -1;
-			const focusBlock = Math.min(
-				Math.max(-1, currentFocusBlockIdxRef.current + step),
-				blocksLength - 1
-			);
-
-			dispatch(setCurrentFocusBlockIdx(focusBlock));
-		} else if (ev.key === "Enter" && !ev.shiftKey) {
-			ev.preventDefault();
-			blockEditorRef.current.blur();
-
-			const newText = blockEditorRef.current.textContent || "";
-			setBlockText(newText);
-			dispatch(updateBlock({ block, content: newText }));
-			dispatch(addNewBlock({ blockId: block.id, insertMode: "after" }));
-		} else if (ev.key === "Enter" && ev.shiftKey) {
-			console.log("Run");
-			const newText = blockEditorRef.current.textContent + "\n";
-			setBlockText(newText);
-		}
-
-		// Remove the block if the block has no content and the event key is Backspace
-		else if (ev.key === "Backspace") {
-			if (blockEditorRef.current.textContent === "") {
+			if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
 				ev.preventDefault();
-				dispatch(removeBlock(block));
+				const blocksLength = currentPageRef.current?.content.length || 0;
+				console.log(blocksLength);
+				const step = ev.key === "ArrowDown" ? 1 : -1;
+				const nextFocusBlock = Math.min(
+					Math.max(-1, currentFocusBlockIdxRef.current + step),
+					blocksLength - 1
+				);
+
+				dispatch(setCurrentFocusBlockIdx(nextFocusBlock));
+			} else if (ev.key === "Enter" && !ev.shiftKey) {
+				ev.preventDefault();
+				blockEditorRef.current.blur();
+
+				const newText = blockEditorRef.current.textContent || "";
+				setBlockText(newText);
+				dispatch(updateBlock({ block, content: newText }));
+				dispatch(addNewBlock({ blockId: block.id, insertMode: "after" }));
+			} else if (ev.key === "Enter" && ev.shiftKey) {
+				console.log("Run");
+				const newText = blockEditorRef.current.textContent + "\n";
+				setBlockText(newText);
+			}
+
+			// Remove the block if the block has no content and the event key is Backspace
+			else if (ev.key === "Backspace") {
 				const precedingBlockIdx = Math.max(
 					0,
 					currentFocusBlockIdxRef.current - 1
@@ -140,55 +138,43 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 				const precedingBlock =
 					currentPageRef.current?.content[precedingBlockIdx];
 
-				if (precedingBlock && blockEditorRef.current.previousSibling) {
-					const precedingBlockLineEnd = precedingBlock.content.length;
-
-					dispatch(setCursorPosition(precedingBlockLineEnd));
-				}
-
-				dispatch(
-					setCurrentFocusBlockIdx(
-						Math.max(0, currentFocusBlockIdxRef.current - 1)
-					)
-				);
-				// Todo add history functionality
-			} else {
-				if (cursorPositionRef.current <= 1) {
+				if (blockEditorRef.current.textContent === "") {
 					ev.preventDefault();
-					console.log("tada");
-					const precedingBlockIdx = Math.max(
-						0,
-						currentFocusBlockIdxRef.current - 1
-					);
-					const precedingBlock =
-						currentPageRef.current?.content[precedingBlockIdx];
-					if (precedingBlock && blockEditorRef.current.previousSibling) {
-						console.log("Merging");
+					dispatch(removeBlock(block));
 
-						if (isTextTypeBlock(precedingBlock)) {
-							dispatch(
-								updateBlock({
-									block: precedingBlock,
-									content: `${precedingBlock.content}${
-										blockEditorRef.current.textContent ?? ""
-									}`,
-								})
-							);
-							dispatch(removeBlock(block));
-							dispatch(setCursorPosition(precedingBlock.content.length));
-							dispatch(
-								setCurrentFocusBlockIdx(
-									Math.max(0, currentFocusBlockIdxRef.current - 1)
-								)
-							);
-						}
-					}
+					// Todo add history functionality
+				} else {
+					if (cursorPositionRef.current !== 0) return;
+					ev.preventDefault();
+					if (!precedingBlock || !blockEditorRef.current.previousSibling)
+						return;
+
+					if (!isTextTypeBlock(precedingBlock)) return;
+
+					dispatch(
+						updateBlock({
+							block: precedingBlock,
+							content: `${precedingBlock.content}${
+								blockEditorRef.current.textContent ?? ""
+							}`,
+						})
+					);
+					dispatch(removeBlock(block));
 				}
+				if (precedingBlock && blockEditorRef.current.previousSibling) {
+					dispatch(setCursorPosition(precedingBlock.content.length));
+					dispatch(
+						setCurrentFocusBlockIdx(
+							Math.max(0, currentFocusBlockIdxRef.current - 1)
+						)
+					);
+				}
+			} else {
+				// Update cursor position in state for other key events
 			}
-		} else {
-			// Update cursor position in state for other key events
-		}
-	};
+		},
+		[dispatch]
+	);
 
 	const handleFocus = () => {
 		dispatch(setCurrentFocusBlockIdx(idx));
@@ -217,7 +203,6 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 		if (selection && selection.rangeCount > 0) {
 			const range = selection.getRangeAt(0);
 			const offset = range.startOffset;
-			console.log(offset);
 			dispatch(setCursorPosition(offset));
 		}
 	}, [dispatch]);
@@ -225,17 +210,19 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	useEffect(() => {
 		cursorPositionRef.current = cursorPosition;
 	}, [cursorPosition]);
+
 	useEffect(() => {
 		setBlockText(() =>
 			isTextTypeBlock(block) && textBlockTypes.includes(block.type)
 				? block.content
 				: ""
 		);
-	}, [block.content]);
+	}, [block]);
+
 	// Set the currentFocusBlockIdx
 	useEffect(() => {
 		currentFocusBlockIdxRef.current = currentFocusBlockIdx;
-	}, [currentFocusBlockIdx]);
+	}, [currentFocusBlockIdx, idx]);
 
 	// Handle focus for new blocks
 	useEffect(() => {
