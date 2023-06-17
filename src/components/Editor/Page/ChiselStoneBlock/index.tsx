@@ -26,7 +26,6 @@ import {
 } from "../../../../features/pagesSlice";
 import "./block_styles.css";
 
-// TODO only update if the block content changed
 const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	block,
 	idx,
