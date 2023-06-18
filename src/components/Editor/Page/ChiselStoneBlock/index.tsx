@@ -130,19 +130,26 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 				dispatch(setCurrentFocusBlockIdx(nextFocusBlock));
 			} else if (ev.key === "Enter" && !ev.shiftKey) {
 				ev.preventDefault();
-				blockEditorRef.current.blur();
 
 				const newText = blockEditorRef.current.textContent || "";
-				// setBlockText(newText);
+				const leftText = newText.substring(0, cursorPositionRef.current);
+				const rightText = newText.substring(
+					cursorPositionRef.current,
+					newText.length
+				);
+
 				const insertMode = ev.altKey ? "before" : "after";
 				const step = ev.altKey ? 0 : 1;
-				dispatch(updateBlock({ block, content: newText }));
-				dispatch(addNewBlock({ blockId: block.id, insertMode }));
-
+				setBlockText(leftText);
+				dispatch(updateBlock({ block, content: leftText }));
 				dispatch(
-					setCurrentFocusBlockIdx(
-						Math.max(0, currentFocusBlockIdxRef.current + step)
-					)
+					addNewBlock({ blockId: block.id, insertMode, content: rightText })
+				);
+
+				const newFocusBlockIdx = currentFocusBlockIdxRef.current + step;
+				dispatch(setCurrentFocusBlockIdx(Math.max(0, newFocusBlockIdx)));
+				dispatch(
+					setCursorPosition(insertMode === "before" ? 0 : rightText.length)
 				);
 			} else if (ev.key === "Enter" && ev.shiftKey) {
 				const newText = blockEditorRef.current.textContent + "\n";
@@ -168,13 +175,6 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 					// Todo: add history functionality
 				} else {
 					// ? If there is content and the cursor is at start of block then merge with the preceding block
-					console.log(
-						cursorPositionRef.current === 0 &&
-							precedingBlock !== undefined &&
-							currentPageRef.current &&
-							currentFocusBlockIdxRef.current !== 0 &&
-							typeof precedingBlock.content === "string"
-					);
 					if (
 						cursorPositionRef.current === 0 &&
 						precedingBlock !== undefined &&
@@ -182,21 +182,23 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 						currentFocusBlockIdxRef.current !== 0 &&
 						isTextTypeBlock(precedingBlock)
 					) {
-						console.log("run");
 						ev.preventDefault();
 						const currentBlockContent =
 							blockEditorRef.current.textContent || "";
 
-						dispatch(setCursorPosition(precedingBlock.content.length));
+						const mergedContent = precedingBlock.content + currentBlockContent;
+						const mergedCursorPosition = precedingBlock.content.length;
+
 						dispatch(
 							updateBlock({
 								block: precedingBlock,
-								content: precedingBlock.content + currentBlockContent,
+								content: mergedContent,
 							})
 						);
 
 						dispatch(removeBlock(block));
 						dispatch(setCurrentFocusBlockIdx(precedingBlockIdx));
+						dispatch(setCursorPosition(mergedCursorPosition));
 					}
 				}
 			}
@@ -204,7 +206,14 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 			else {
 			}
 		},
-		[dispatch, currentFocusBlockIdxRef]
+		[
+			dispatch,
+			currentFocusBlockIdxRef,
+			blockEditorRef,
+			cursorPositionRef,
+			currentPageRef,
+			idx,
+		]
 	);
 
 	const handleFocus = () => {
@@ -229,7 +238,6 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 			}
 		}
 	};
-	``;
 	const handleOnClick = useCallback(() => {
 		const selection = window.getSelection();
 		if (selection && selection.rangeCount > 0) {
