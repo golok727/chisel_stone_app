@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { dummyPages } from "../config/constants";
+import { StringContentBlockTypes, dummyPages } from "../config/constants";
 import { isTextTypeBlock } from "./../config/constants";
 
 interface PagesState {
@@ -51,6 +51,7 @@ const pageSlice = createSlice({
 			action: PayloadAction<{
 				blockId?: string;
 				content?: string;
+				type?: StringContentBlockTypes;
 				insertMode?: "before" | "after";
 			}>
 		) => {
@@ -61,9 +62,9 @@ const pageSlice = createSlice({
 				if (!currentPage) return;
 				const { blockId } = action.payload;
 
-				const newEmptyBlock: TextBlock = {
+				const newEmptyBlock: Block = {
 					id: Date.now().toString(),
-					type: "text",
+					type: action.payload.type ?? "text",
 					content: action.payload.content ?? "",
 				};
 
