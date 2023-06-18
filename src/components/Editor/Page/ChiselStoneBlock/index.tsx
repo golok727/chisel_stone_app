@@ -14,6 +14,7 @@ import Button from "../../../../Button";
 
 import { RootState } from "../../../../app/store";
 import {
+	StringContentBlockTypes,
 	getClassNamesForTextBlocks,
 	getPlaceHolderTextForTextBlocks,
 	isTextTypeBlock,
@@ -118,7 +119,6 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 		(ev: React.KeyboardEvent<HTMLDivElement>) => {
 			if (!blockEditorRef.current) return;
 			const blocksLength = currentPageRef.current?.content.length || 0;
-
 			if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
 				ev.preventDefault();
 				const step = ev.key === "ArrowDown" ? 1 : -1;
@@ -201,6 +201,25 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 						dispatch(setCursorPosition(mergedCursorPosition));
 					}
 				}
+			} else if (["1", "2", "3"].includes(ev.key) && ev.ctrlKey) {
+				ev.preventDefault();
+				const key = ev.key;
+				const insertMode = ev.altKey ? "before" : "after";
+				const step = ev.altKey ? 0 : 1;
+				const type = "h" + key;
+				console.log(type);
+				dispatch(
+					addNewBlock({
+						blockId: block.id,
+						content: "",
+						insertMode,
+						type: ("h" + key) as StringContentBlockTypes,
+					})
+				);
+
+				dispatch(
+					setCurrentFocusBlockIdx(currentFocusBlockIdxRef.current + step)
+				);
 			}
 			// Update cursor position in state for other key events
 			else {
@@ -213,6 +232,7 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 			cursorPositionRef,
 			currentPageRef,
 			idx,
+			block,
 		]
 	);
 
