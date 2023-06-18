@@ -220,6 +220,9 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 				dispatch(
 					setCurrentFocusBlockIdx(currentFocusBlockIdxRef.current + step)
 				);
+			} else if (ev.key.toLowerCase() === "d" && ev.ctrlKey) {
+				ev.preventDefault();
+				dispatch(removeBlock(block));
 			}
 			// Update cursor position in state for other key events
 			else {
@@ -300,7 +303,6 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	useEffect(() => {
 		currentPageRef.current = currentPage;
 	}, [currentPage]);
-	console.log("idx", idx);
 
 	return (
 		<div className="page__block" tabIndex={-1} data-block-id={block.id}>
