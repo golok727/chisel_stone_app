@@ -1,18 +1,16 @@
-import { StringContentBlockTypes, textBlockTypes } from "./../config/constants";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { dummyPages } from "../config/constants";
+import { isTextTypeBlock } from "./../config/constants";
 
 interface PagesState {
 	pages: ChiselStoneNotebookPage[];
 	currentPageId: string | null;
-	newBlock: string | null;
 }
 
 const initialState: PagesState = {
 	pages: [...dummyPages],
 	// pages: [],
 	currentPageId: null,
-	newBlock: null,
 };
 
 const pageSlice = createSlice({
@@ -88,7 +86,6 @@ const pageSlice = createSlice({
 				} else {
 					currentPage.content.splice(foundBlockIndex, 0, newEmptyBlock);
 				}
-				state.newBlock = newEmptyBlock.id;
 			}
 		},
 
@@ -104,11 +101,7 @@ const pageSlice = createSlice({
 				);
 				if (!currentPage) return;
 
-				if (
-					textBlockTypes.includes(
-						action.payload.block.type as StringContentBlockTypes
-					)
-				) {
+				if (isTextTypeBlock(action.payload.block)) {
 					const { block, content } = action.payload;
 					const updatedBlock = currentPage.content.find(
 						(eachBlock) => eachBlock.id === block.id

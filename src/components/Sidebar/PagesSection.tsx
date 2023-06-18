@@ -116,13 +116,15 @@ const PageSelector = ({
 			);
 
 			dispatch(setCurrentFocusPageIdx(focusPage));
-			dispatch(setCurrentFocusBlockIdx(0));
+			// dispatch(setCurrentFocusBlockIdx(0));
 		}
 	};
 	const dispatch = useDispatch();
 
 	const handleFocus = () => {
 		dispatch(setCurrentFocusPageIdx(idx));
+
+		// dispatch(setCurrentFocusBlockIdx(0));
 	};
 
 	useEffect(() => {

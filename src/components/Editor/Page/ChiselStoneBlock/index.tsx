@@ -37,9 +37,8 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 	const dispatch = useDispatch();
 	const blockEditorRef = useRef<HTMLElement | null>(null);
 
-	const { newBlockId, currentFocusBlockIdx, cursorPosition } = useSelector(
+	const { currentFocusBlockIdx, cursorPosition } = useSelector(
 		(state: RootState) => ({
-			newBlockId: state.page.newBlock,
 			currentFocusBlockIdx: state.app.currentFocusBlockIdx,
 			cursorPosition: state.app.cursorPosition,
 		})
@@ -71,12 +70,16 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 
 		if (ev.key === "Enter") {
 			ev.preventDefault();
+			if (!currentPageRef.current) return;
 			const insertMode = ev.altKey ? "before" : "after";
 			const step = ev.altKey ? -1 : 1;
 			dispatch(addNewBlock({ blockId: block.id, insertMode }));
 			dispatch(
 				setCurrentFocusBlockIdx(
-					Math.max(0, currentFocusBlockIdxRef.current + step)
+					Math.min(
+						Math.max(0, currentFocusBlockIdxRef.current + step),
+						currentPageRef.current.content.length - 1
+					)
 				)
 			);
 		}
@@ -165,15 +168,24 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 					// Todo: add history functionality
 				} else {
 					// ? If there is content and the cursor is at start of block then merge with the preceding block
+					console.log(
+						cursorPositionRef.current === 0 &&
+							precedingBlock !== undefined &&
+							currentPageRef.current &&
+							currentFocusBlockIdxRef.current !== 0 &&
+							typeof precedingBlock.content === "string"
+					);
 					if (
 						cursorPositionRef.current === 0 &&
-						precedingBlock &&
+						precedingBlock !== undefined &&
 						currentPageRef.current &&
-						currentFocusBlockIdx !== 0 &&
+						currentFocusBlockIdxRef.current !== 0 &&
 						isTextTypeBlock(precedingBlock)
 					) {
+						console.log("run");
 						ev.preventDefault();
-						const currentBlockContent = blockEditorRef.current.textContent;
+						const currentBlockContent =
+							blockEditorRef.current.textContent || "";
 
 						dispatch(setCursorPosition(precedingBlock.content.length));
 						dispatch(
@@ -226,7 +238,7 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 			dispatch(setCursorPosition(offset));
 			dispatch(setCurrentFocusBlockIdx(idx));
 		}
-	}, [dispatch]);
+	}, [dispatch, idx]);
 
 	useEffect(() => {
 		cursorPositionRef.current = cursorPosition;
@@ -242,15 +254,15 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 
 	// Set the currentFocusBlockIdx
 	useEffect(() => {
-		currentFocusBlockIdxRef.current = currentFocusBlockIdx;
+		// Todo change this behavior and make current cursor position for each page
+		const blocksLength = currentPageRef.current
+			? currentPageRef.current.content.length - 1
+			: 0;
+		currentFocusBlockIdxRef.current = Math.min(
+			Math.max(0, currentFocusBlockIdx),
+			blocksLength
+		);
 	}, [currentFocusBlockIdx, idx]);
-
-	// Handle focus for new blocks
-	// useEffect(() => {
-	// 	if (newBlockId === block.id && blockEditorRef.current && !block.content) {
-	// 		blockEditorRef.current?.focus();
-	// 	}
-	// }, [block.id, newBlockId]);
 
 	useEffect(() => {
 		if (!blockEditorRef.current) return;
@@ -273,7 +285,7 @@ const ChiselStoneBlock: React.FC<{ block: Block; idx: number }> = ({
 			</div>
 
 			{/*  For Text Block */}
-			{isTextTypeBlock(block) && textBlockTypes.includes(block.type) && (
+			{isTextTypeBlock(block) && (
 				<ContentEditable
 					onFocus={handleFocus}
 					onBlur={handleOnBlur}
