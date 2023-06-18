@@ -50,6 +50,7 @@ const pageSlice = createSlice({
 			state,
 			action: PayloadAction<{
 				blockId?: string;
+				content?: string;
 				insertMode?: "before" | "after";
 			}>
 		) => {
@@ -63,7 +64,7 @@ const pageSlice = createSlice({
 				const newEmptyBlock: TextBlock = {
 					id: Date.now().toString(),
 					type: "text",
-					content: "",
+					content: action.payload.content ?? "",
 				};
 
 				if (blockId === undefined) {
