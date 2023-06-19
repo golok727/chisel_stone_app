@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./page_style.css";
 import Header from "./Header";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../app/store";
 import {
 	ArrowRightIcon,
@@ -9,11 +9,29 @@ import {
 	PlusIcon,
 } from "@heroicons/react/24/outline";
 import EditorMain from "./EditorMain";
+import { setPagesState } from "../../../features/appSlice";
 const Page = () => {
 	const { pages, currentPageId } = useSelector(({ page }: RootState) => ({
 		pages: page.pages,
 		currentPageId: page.currentPageId,
 	}));
+	const isPagesStateAvailable = useSelector((state: RootState) => {
+		if (!currentPageId) return false;
+
+		return state.app.pagesState[currentPageId] !== undefined;
+	});
+	const dispatch = useDispatch();
+	useEffect(() => {
+		if (currentPageId === null) return;
+		if (!isPagesStateAvailable)
+			dispatch(
+				setPagesState({
+					pageId: currentPageId,
+					currentFocusBlockIdx: 0,
+					cursorPosition: 0,
+				})
+			);
+	});
 	return (
 		<div className="editor__page">
 			{pages && pages.length > 0 && currentPageId ? (

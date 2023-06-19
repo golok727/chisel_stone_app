@@ -138,6 +138,7 @@ export const getCurrentPage = (state: { page: PagesState }) => {
 	}
 	return null;
 };
+
 export const {
 	addPage,
 	setCurrentPage,

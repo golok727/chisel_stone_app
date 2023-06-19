@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from "../app/store";
 
 interface AppState {
 	darkMode: boolean;
@@ -10,6 +11,12 @@ interface AppState {
 	currentFocusPageIdx: number;
 	currentFocusBlockIdx: number;
 	cursorPosition: number;
+	pagesState: {
+		[pageId: string]: {
+			cursorPosition: number;
+			currentFocusBlockIdx: number;
+		};
+	};
 }
 
 const initialState: AppState = {
@@ -22,6 +29,7 @@ const initialState: AppState = {
 	currentFocusPageIdx: 0,
 	currentFocusBlockIdx: 0,
 	cursorPosition: 0,
+	pagesState: {},
 };
 
 const appSlice = createSlice({
@@ -57,8 +65,41 @@ const appSlice = createSlice({
 		setCursorPosition: (state, action: PayloadAction<number>) => {
 			state.cursorPosition = action.payload;
 		},
+		setPagesState: (
+			state,
+			action: PayloadAction<{
+				pageId: string;
+				cursorPosition: number;
+				currentFocusBlockIdx: number;
+			}>
+		) => {
+			const { pageId, cursorPosition, currentFocusBlockIdx } = action.payload;
+
+			state.pagesState[pageId] = {
+				cursorPosition,
+				currentFocusBlockIdx,
+			};
+		},
 	},
 });
+
+export const getPagesState = (state: RootState) => {
+	const { pagesState } = state.app;
+
+	if (
+		!state.page.currentPageId ||
+		pagesState[state.page.currentPageId] === undefined
+	)
+		return {
+			currentFocusBlockIdx: 0,
+			cursorPosition: 0,
+		};
+
+	const { currentFocusBlockIdx, cursorPosition } =
+		pagesState[state.page.currentPageId];
+
+	return { currentFocusBlockIdx, cursorPosition };
+};
 
 export const {
 	toggleShowPages,
@@ -69,5 +110,6 @@ export const {
 	setCurrentFocusPageIdx,
 	setCurrentFocusBlockIdx,
 	setCursorPosition,
+	setPagesState,
 } = appSlice.actions;
 export default appSlice.reducer;
