@@ -23,13 +23,10 @@ const Page = () => {
 	const dispatch = useDispatch();
 	useEffect(() => {
 		if (currentPageId === null) return;
-		console.log({ isPagesStateAvailable });
 		if (!isPagesStateAvailable)
 			dispatch(
 				setPagesState({
 					pageId: currentPageId,
-					currentFocusBlockIdx: 0,
-					cursorPosition: 0,
 				})
 			);
 	}, [dispatch, currentPageId, isPagesStateAvailable]);

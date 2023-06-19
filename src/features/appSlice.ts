@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../app/store";
+import { ArrowLongLeftIcon } from "@heroicons/react/24/outline";
 
 interface AppState {
 	darkMode: boolean;
@@ -77,9 +78,11 @@ const appSlice = createSlice({
 
 			state.pagesState[pageId] = {
 				cursorPosition:
-					cursorPosition ?? state.pagesState[pageId].cursorPosition,
+					(cursorPosition ?? state.pagesState[pageId]?.cursorPosition) || 0,
 				currentFocusBlockIdx:
-					currentFocusBlockIdx ?? state.pagesState[pageId].currentFocusBlockIdx,
+					(currentFocusBlockIdx ??
+						state.pagesState[pageId]?.currentFocusBlockIdx) ||
+					0,
 			};
 		},
 	},
@@ -91,11 +94,12 @@ export const getPagesState = (state: RootState) => {
 	if (
 		!state.page.currentPageId ||
 		pagesState[state.page.currentPageId] === undefined
-	)
+	) {
 		return {
 			currentFocusBlockIdx: 0,
 			cursorPosition: 0,
 		};
+	}
 
 	const { currentFocusBlockIdx, cursorPosition } =
 		pagesState[state.page.currentPageId];

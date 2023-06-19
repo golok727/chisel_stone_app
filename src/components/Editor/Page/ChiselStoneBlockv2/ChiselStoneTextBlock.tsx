@@ -7,18 +7,20 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import ContentEditable from "react-contenteditable";
+import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
 	getClassNamesForTextBlocks,
 	getPlaceHolderTextForTextBlocks,
+	isTextTypeBlock,
 } from "../../../../config/constants";
-import editorConfig from "../../../../config/editorConfig";
+import editorConfig, { keyBindings } from "../../../../config/editorConfig";
 import { getPagesState, setPagesState } from "../../../../features/appSlice";
 import {
 	addNewBlock,
 	getCurrentPage,
+	removeBlock,
 	updateBlock,
 } from "../../../../features/pagesSlice";
 
@@ -64,19 +66,17 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 
 		const range = document.createRange();
 		const contentLength = editableBlockRef.current.textContent?.length || 0;
-		let startPos = cursorPositionRef.current;
-		const firstChildNode = editableBlockRef.current.firstChild;
-		if (firstChildNode instanceof Node) {
-			startPos = Math.min(startPos, contentLength);
-			range.setStart(firstChildNode, startPos);
-		} else {
-			startPos = contentLength;
-			range.setStart(editableBlockRef.current, startPos);
-		}
+		const startPos = Math.min(cursorPositionRef.current, contentLength);
+
+		range.setStart(
+			editableBlockRef.current.firstChild || editableBlockRef.current,
+			startPos
+		);
 		range.collapse(true);
+
 		selection.removeAllRanges();
 		selection.addRange(range);
-	}, [editableBlockRef, cursorPosition]);
+	}, [editableBlockRef, cursorPositionRef]);
 
 	// to set the caret position when the caret pos is changed with the arrow keys or my click
 
@@ -85,24 +85,31 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 		if (selection && selection.rangeCount > 0 && currentPageRef.current?._id) {
 			const range = selection.getRangeAt(0);
 			const offset = range.startOffset;
-			if (offset !== cursorPositionRef.current)
-				dispatch(
-					setPagesState({
-						pageId: currentPageRef.current._id,
-						cursorPosition: offset,
-					})
-				);
+			// if (offset !== cursorPositionRef.current)
+			dispatch(
+				setPagesState({
+					pageId: currentPageRef.current._id,
+					cursorPosition: offset,
+				})
+			);
 		}
-	}, [dispatch, currentPage, currentPageRef]);
+	}, [dispatch, currentPage]);
 
 	// Handlers
 
 	// Keydown
 	const handleKeyUp = useCallback(
 		(ev: KeyboardEvent<HTMLDivElement>) => {
+			//! bug
 			setCursorPosition();
+
+			if (ev.key === "Backspace") {
+				setTimeout(() => {
+					positionCaret();
+				}, 0);
+			}
 		},
-		[setCursorPosition]
+		[setCursorPosition, positionCaret]
 	);
 
 	//Keyup
@@ -127,12 +134,16 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	const handleKeyDown = useCallback(
 		(ev: KeyboardEvent<HTMLDivElement>) => {
 			if (!editableBlockRef.current || !currentPageRef.current) return;
+			const { current: blockEditor } = editableBlockRef;
+			const { current: currentPage } = currentPageRef;
+
 			const { key } = ev;
 			const { keyBindings } = editorConfig;
 			const currentPageId = currentPageRef.current._id;
 			const insertMode = ev.altKey ? "before" : "after";
-			const blocksLength = currentPageRef.current?.content.length || 0;
+			const blocksLength = currentPage.content.length || 0;
 
+			// Handle Arrow keys
 			if (key === keyBindings.ARROW_UP || key === keyBindings.ARROW_DOWN) {
 				ev.preventDefault();
 				const step = key == keyBindings.ARROW_UP ? -1 : 1;
@@ -146,24 +157,28 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 						currentFocusBlockIdx: nextFocusBlock,
 					})
 				);
-			} else if (key === keyBindings.ENTER && !ev.shiftKey) {
+			}
+			// Handle Enter key
+			else if (key === keyBindings.ENTER && !ev.shiftKey) {
 				ev.preventDefault();
-				const newText = editableBlockRef.current.textContent || "";
+				const newText = blockTextRef.current || "";
 				const leftText = newText.substring(0, cursorPositionRef.current);
 				const rightText = newText.substring(
 					cursorPositionRef.current,
 					newText.length
 				);
+				console.log({ leftText, rightText, cur: cursorPositionRef.current });
 				const step = ev.altKey ? 0 : 1;
 				blockTextRef.current = leftText;
-				dispatch(updateBlock({ block: block as Block, content: leftText }));
 				dispatch(
 					addNewBlock({ blockId: block.id, insertMode, content: rightText })
 				);
+				dispatch(updateBlock({ block: block as Block, content: leftText }));
 
 				// update the focus block index and the cursor position
 				const newFocusBlockIdx = Math.max(
-					currentFocusBlockIdxRef.current + step
+					currentFocusBlockIdxRef.current + step,
+					0
 				);
 				const newCursorPosition =
 					insertMode === "before" ? 0 : rightText.length;
@@ -175,17 +190,64 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 						cursorPosition: newCursorPosition,
 					})
 				);
-			} else if (key === keyBindings.BACKSPACE) {
+			}
+			// Handle Backspace
+			else if (key === keyBindings.BACKSPACE) {
+				const precedingBlockIdx = Math.max(
+					0,
+					currentFocusBlockIdxRef.current - 1
+				);
+				const precedingBlock = currentPage.content[precedingBlockIdx];
+
+				// if there is not text content then remove the block
+				if (blockEditor.textContent === "") {
+					ev.preventDefault();
+					dispatch(removeBlock(block));
+
+					if (precedingBlock === undefined) return;
+
+					dispatch(
+						setPagesState({
+							pageId: currentPage._id,
+							currentFocusBlockIdx: precedingBlockIdx,
+							cursorPosition: precedingBlock.content.length,
+						})
+					);
+				}
+				// if it has text content
+				else if (
+					cursorPositionRef.current === 0 &&
+					precedingBlock !== undefined &&
+					currentFocusBlockIdxRef.current !== 0 &&
+					isTextTypeBlock(precedingBlock)
+				) {
+					// merge the block with the previous block
+					ev.preventDefault();
+					const currentBlockContent = blockEditor.textContent || "";
+					const mergedContent = precedingBlock.content + currentBlockContent;
+					const mergedCursorPos = precedingBlock.content.length;
+					dispatch(
+						updateBlock({ block: precedingBlock, content: mergedContent })
+					);
+					dispatch(removeBlock(block));
+					dispatch(
+						setPagesState({
+							pageId: currentPageId,
+							currentFocusBlockIdx: precedingBlockIdx,
+							cursorPosition: mergedCursorPos,
+						})
+					);
+				}
 			} else {
 				// ...rest
 			}
 		},
 		[
 			dispatch,
-			currentPageRef,
+			currentPage,
 			currentFocusBlockIdx,
+			cursorPosition,
 			editableBlockRef,
-			editorConfig,
 		]
 	);
 
@@ -202,29 +264,18 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	const handleFocus = useCallback(
 		(ev: FocusEvent<HTMLDivElement>) => {
 			positionCaret();
-			if (!currentPageRef.current) return;
-
-			dispatch(
-				setPagesState({
-					pageId: currentPageRef.current._id,
-					currentFocusBlockIdx: currentFocusBlockIdxRef.current,
-				})
-			);
 		},
-		[
-			dispatch,
-			currentPageRef,
-			currentFocusBlockIdxRef,
-			currentFocusBlockIdx,
-			positionCaret,
-		]
+		[positionCaret]
 	);
 
-	const handleOnChange = useCallback(() => {
-		const newText = editableBlockRef.current?.textContent ?? "";
-		if (newText === blockTextRef.current) return;
-		blockTextRef.current = newText;
-	}, [editableBlockRef, blockTextRef]);
+	const handleOnChange = useCallback(
+		(ev: ContentEditableEvent) => {
+			const newText = editableBlockRef.current?.textContent ?? "";
+			if (newText === blockTextRef.current) return;
+			blockTextRef.current = newText;
+		},
+		[editableBlockRef, blockTextRef]
+	);
 
 	// HandlersEnd
 
@@ -233,15 +284,21 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 		currentPageRef.current = currentPage;
 		currentFocusBlockIdxRef.current = currentFocusBlockIdx;
 		cursorPositionRef.current = cursorPosition;
-	}, [currentPage, currentFocusBlockIdx, cursorPosition]);
+	}, [currentPage, currentFocusBlockIdx, cursorPosition, block]);
 
 	useEffect(() => {
-		if (blockIdx === currentFocusBlockIdxRef.current)
+		blockTextRef.current = block.content;
+	}, [block]);
+
+	useEffect(() => {
+		if (blockIdx === currentFocusBlockIdxRef.current) {
 			editableBlockRef.current?.focus();
+		}
 	}, [blockIdx, currentFocusBlockIdx]);
 
 	return (
 		<ContentEditable
+			key={blockIdx}
 			onKeyDown={handleKeyDown}
 			onKeyUp={handleKeyUp}
 			onClick={handleClick}
