@@ -7,15 +7,20 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
+import ContentEditable from "react-contenteditable";
+import { useDispatch, useSelector } from "react-redux";
+
 import {
 	getClassNamesForTextBlocks,
 	getPlaceHolderTextForTextBlocks,
 } from "../../../../config/constants";
-import { useDispatch, useSelector } from "react-redux";
-import { getCurrentPage } from "../../../../features/pagesSlice";
-import { RootState } from "../../../../app/store";
+import editorConfig from "../../../../config/editorConfig";
 import { getPagesState, setPagesState } from "../../../../features/appSlice";
+import {
+	addNewBlock,
+	getCurrentPage,
+	updateBlock,
+} from "../../../../features/pagesSlice";
 
 interface TextBlockProps {
 	blockIdx: number;
@@ -30,7 +35,7 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	// Ref for the block
 	const editableBlockRef = useRef<HTMLDivElement | null>(null);
 	// State for the current Text
-	const [blockText, setBlockText] = useState(block.content);
+	const blockTextRef = useRef(block.content);
 
 	// Select from state
 	const currentPage = useSelector(getCurrentPage);
@@ -41,33 +46,16 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	const currentFocusBlockIdxRef = useRef(currentFocusBlockIdx);
 	const cursorPositionRef = useRef(cursorPosition);
 
-	// Handlers
-
-	// Keydown
-	const handleKeyUp = useCallback((ev: KeyboardEvent<HTMLDivElement>) => {
-		setCursorPosition();
-	}, []);
-
-	//Keyup
-	const handleClick = useCallback((ev: MouseEvent<HTMLDivElement>) => {
-		setCursorPosition();
-	}, []);
-
-	const handleKeyDown = useCallback((ev: KeyboardEvent<HTMLDivElement>) => {},
-	[]);
-
-	const handleBlur = useCallback((ev: FocusEvent<HTMLDivElement>) => {}, []);
-	const handleFocus = useCallback((ev: FocusEvent<HTMLDivElement>) => {
-		positionCaret();
-	}, []);
-
-	const handleOnChange = useCallback(() => {
-		const newText = editableBlockRef.current?.textContent ?? "";
-		if (newText === blockText) return;
-		setBlockText(newText);
-	}, [setBlockText, blockText]);
-
-	// HandlersEnd
+	// Fns
+	const saveBlock = useCallback(() => {
+		if (!editableBlockRef.current) return;
+		dispatch(
+			updateBlock({
+				block: block as Block,
+				content: editableBlockRef.current.textContent || "",
+			})
+		);
+	}, [dispatch, editableBlockRef]);
 
 	// Position the caret to the current cursor position in the state
 	const positionCaret = useCallback(() => {
@@ -88,7 +76,7 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 		range.collapse(true);
 		selection.removeAllRanges();
 		selection.addRange(range);
-	}, [editableBlockRef, cursorPosition, cursorPositionRef]);
+	}, [editableBlockRef, cursorPosition]);
 
 	// to set the caret position when the caret pos is changed with the arrow keys or my click
 
@@ -97,14 +85,148 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 		if (selection && selection.rangeCount > 0 && currentPageRef.current?._id) {
 			const range = selection.getRangeAt(0);
 			const offset = range.startOffset;
+			if (offset !== cursorPositionRef.current)
+				dispatch(
+					setPagesState({
+						pageId: currentPageRef.current._id,
+						cursorPosition: offset,
+					})
+				);
+		}
+	}, [dispatch, currentPage, currentPageRef]);
+
+	// Handlers
+
+	// Keydown
+	const handleKeyUp = useCallback(
+		(ev: KeyboardEvent<HTMLDivElement>) => {
+			setCursorPosition();
+		},
+		[setCursorPosition]
+	);
+
+	//Keyup
+	const handleClick = useCallback(
+		(ev: MouseEvent<HTMLDivElement>) => {
+			// If a block is pressed update the cursor pos and the block idx
+			setCursorPosition();
+			if (
+				currentPageRef.current &&
+				blockIdx !== currentFocusBlockIdxRef.current
+			)
+				dispatch(
+					setPagesState({
+						pageId: currentPageRef.current._id,
+						currentFocusBlockIdx: blockIdx,
+					})
+				);
+		},
+		[dispatch, currentPageRef, currentFocusBlockIdxRef, blockIdx]
+	);
+
+	const handleKeyDown = useCallback(
+		(ev: KeyboardEvent<HTMLDivElement>) => {
+			if (!editableBlockRef.current || !currentPageRef.current) return;
+			const { key } = ev;
+			const { keyBindings } = editorConfig;
+			const currentPageId = currentPageRef.current._id;
+			const insertMode = ev.altKey ? "before" : "after";
+			const blocksLength = currentPageRef.current?.content.length || 0;
+
+			if (key === keyBindings.ARROW_UP || key === keyBindings.ARROW_DOWN) {
+				ev.preventDefault();
+				const step = key == keyBindings.ARROW_UP ? -1 : 1;
+				const nextFocusBlock = Math.min(
+					Math.max(0, currentFocusBlockIdxRef.current + step),
+					blocksLength - 1
+				);
+				dispatch(
+					setPagesState({
+						pageId: currentPageId,
+						currentFocusBlockIdx: nextFocusBlock,
+					})
+				);
+			} else if (key === keyBindings.ENTER && !ev.shiftKey) {
+				ev.preventDefault();
+				const newText = editableBlockRef.current.textContent || "";
+				const leftText = newText.substring(0, cursorPositionRef.current);
+				const rightText = newText.substring(
+					cursorPositionRef.current,
+					newText.length
+				);
+				const step = ev.altKey ? 0 : 1;
+				blockTextRef.current = leftText;
+				dispatch(updateBlock({ block: block as Block, content: leftText }));
+				dispatch(
+					addNewBlock({ blockId: block.id, insertMode, content: rightText })
+				);
+
+				// update the focus block index and the cursor position
+				const newFocusBlockIdx = Math.max(
+					currentFocusBlockIdxRef.current + step
+				);
+				const newCursorPosition =
+					insertMode === "before" ? 0 : rightText.length;
+
+				dispatch(
+					setPagesState({
+						pageId: currentPageId,
+						currentFocusBlockIdx: newFocusBlockIdx,
+						cursorPosition: newCursorPosition,
+					})
+				);
+			} else if (key === keyBindings.BACKSPACE) {
+			} else {
+				// ...rest
+			}
+		},
+		[
+			dispatch,
+			currentPageRef,
+			currentFocusBlockIdx,
+			editableBlockRef,
+			editorConfig,
+		]
+	);
+
+	// When the editor is out of focus then save the thing
+	const handleBlur = useCallback(() => {
+		saveBlock();
+	}, [saveBlock]);
+
+	/*
+		when focussed set the cursor position to the previous pos from state
+		set the current focus block to the current one
+	*/
+
+	const handleFocus = useCallback(
+		(ev: FocusEvent<HTMLDivElement>) => {
+			positionCaret();
+			if (!currentPageRef.current) return;
+
 			dispatch(
 				setPagesState({
 					pageId: currentPageRef.current._id,
-					cursorPosition: offset,
+					currentFocusBlockIdx: currentFocusBlockIdxRef.current,
 				})
 			);
-		}
-	}, [dispatch, currentPage, currentPageRef]);
+		},
+		[
+			dispatch,
+			currentPageRef,
+			currentFocusBlockIdxRef,
+			currentFocusBlockIdx,
+			positionCaret,
+		]
+	);
+
+	const handleOnChange = useCallback(() => {
+		const newText = editableBlockRef.current?.textContent ?? "";
+		if (newText === blockTextRef.current) return;
+		blockTextRef.current = newText;
+	}, [editableBlockRef, blockTextRef]);
+
+	// HandlersEnd
 
 	// Use Effects
 	useEffect(() => {
@@ -116,7 +238,7 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	useEffect(() => {
 		if (blockIdx === currentFocusBlockIdxRef.current)
 			editableBlockRef.current?.focus();
-	}, [blockIdx, currentFocusBlockIdx, currentFocusBlockIdxRef]);
+	}, [blockIdx, currentFocusBlockIdx]);
 
 	return (
 		<ContentEditable
@@ -128,11 +250,11 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 			onChange={handleOnChange}
 			data-placeholder={getPlaceHolderTextForTextBlocks(block.type)}
 			style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}
-			html={blockText}
+			html={blockTextRef.current}
 			innerRef={editableBlockRef}
 			className={`page__block__editable_div ${getClassNamesForTextBlocks(
 				block.type
-			)} ${blockText === "" ? "empty" : ""}`}
+			)} ${blockTextRef.current === "" ? "empty" : ""}`}
 		/>
 	);
 };
