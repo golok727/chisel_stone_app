@@ -23,6 +23,7 @@ const Page = () => {
 	const dispatch = useDispatch();
 	useEffect(() => {
 		if (currentPageId === null) return;
+		console.log({ isPagesStateAvailable });
 		if (!isPagesStateAvailable)
 			dispatch(
 				setPagesState({
@@ -31,7 +32,8 @@ const Page = () => {
 					cursorPosition: 0,
 				})
 			);
-	});
+	}, [dispatch, currentPageId, isPagesStateAvailable]);
+
 	return (
 		<div className="editor__page">
 			{pages && pages.length > 0 && currentPageId ? (

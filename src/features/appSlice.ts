@@ -69,15 +69,17 @@ const appSlice = createSlice({
 			state,
 			action: PayloadAction<{
 				pageId: string;
-				cursorPosition: number;
-				currentFocusBlockIdx: number;
+				cursorPosition?: number;
+				currentFocusBlockIdx?: number;
 			}>
 		) => {
 			const { pageId, cursorPosition, currentFocusBlockIdx } = action.payload;
 
 			state.pagesState[pageId] = {
-				cursorPosition,
-				currentFocusBlockIdx,
+				cursorPosition:
+					cursorPosition ?? state.pagesState[pageId].cursorPosition,
+				currentFocusBlockIdx:
+					currentFocusBlockIdx ?? state.pagesState[pageId].currentFocusBlockIdx,
 			};
 		},
 	},
