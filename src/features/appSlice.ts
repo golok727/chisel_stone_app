@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../app/store";
-import { ArrowLongLeftIcon } from "@heroicons/react/24/outline";
 
 interface AppState {
 	darkMode: boolean;
@@ -10,8 +9,6 @@ interface AppState {
 	showPages: boolean;
 	sidebarWidth: number;
 	currentFocusPageIdx: number;
-	currentFocusBlockIdx: number;
-	cursorPosition: number;
 	pagesState: {
 		[pageId: string]: {
 			cursorPosition: number;
@@ -28,8 +25,7 @@ const initialState: AppState = {
 	showPages: true,
 	sidebarWidth: 300,
 	currentFocusPageIdx: 0,
-	currentFocusBlockIdx: 0,
-	cursorPosition: 0,
+
 	pagesState: {},
 };
 
@@ -59,13 +55,7 @@ const appSlice = createSlice({
 		setCurrentFocusPageIdx: (state, action: PayloadAction<number>) => {
 			state.currentFocusPageIdx = action.payload;
 		},
-		setCurrentFocusBlockIdx: (state, action: PayloadAction<number>) => {
-			state.currentFocusBlockIdx = action.payload;
-		},
 
-		setCursorPosition: (state, action: PayloadAction<number>) => {
-			state.cursorPosition = action.payload;
-		},
 		setPagesState: (
 			state,
 			action: PayloadAction<{
@@ -114,8 +104,7 @@ export const {
 	toggleSidebar,
 	setSidebarWidth,
 	setCurrentFocusPageIdx,
-	setCurrentFocusBlockIdx,
-	setCursorPosition,
+
 	setPagesState,
 } = appSlice.actions;
 export default appSlice.reducer;

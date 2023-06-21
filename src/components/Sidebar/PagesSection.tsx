@@ -11,7 +11,6 @@ import { RootState } from "../../app/store";
 import Button from "../../Button";
 import { addPage, setCurrentPage } from "../../features/pagesSlice";
 import {
-	setCurrentFocusBlockIdx,
 	setCurrentFocusPageIdx,
 	toggleShowPages,
 } from "../../features/appSlice";
