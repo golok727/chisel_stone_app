@@ -13,8 +13,8 @@
 	border-color: hsla(0, 0%, 100%, 0.1);
 }
 
-.page__block:focus .page__block__actions,
-.page__block:focus-within .page__block__actions,
+/* .page__block:focus .page__block__actions,
+.page__block:focus-within .page__block__actions, */
 .page__block:hover .page__block__actions {
 	opacity: 0.2;
 }

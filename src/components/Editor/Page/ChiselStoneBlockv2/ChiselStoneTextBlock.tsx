@@ -5,7 +5,6 @@ import React, {
 	useCallback,
 	useEffect,
 	useRef,
-	useState,
 } from "react";
 import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useDispatch, useSelector } from "react-redux";
@@ -68,10 +67,20 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 		const contentLength = editableBlockRef.current.textContent?.length || 0;
 		const startPos = Math.min(cursorPositionRef.current, contentLength);
 
-		range.setStart(
-			editableBlockRef.current.firstChild || editableBlockRef.current,
-			startPos
-		);
+		// Check if the start position is within the valid range
+		if (startPos <= contentLength) {
+			range.setStart(
+				editableBlockRef.current.firstChild || editableBlockRef.current,
+				startPos
+			);
+		} else {
+			// Handle the case where the start position is beyond the content length
+			range.setStart(
+				editableBlockRef.current.lastChild || editableBlockRef.current,
+				0
+			);
+		}
+
 		range.collapse(true);
 
 		selection.removeAllRanges();
@@ -100,10 +109,9 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	// Keydown
 	const handleKeyUp = useCallback(
 		(ev: KeyboardEvent<HTMLDivElement>) => {
-			//! bug
 			setCursorPosition();
-
 			if (ev.key === "Backspace") {
+				ev.preventDefault();
 				setTimeout(() => {
 					positionCaret();
 				}, 0);
@@ -145,8 +153,9 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 
 			// Handle Arrow keys
 			if (key === keyBindings.ARROW_UP || key === keyBindings.ARROW_DOWN) {
+				const step = key === keyBindings.ARROW_UP ? -1 : 1;
+
 				ev.preventDefault();
-				const step = key == keyBindings.ARROW_UP ? -1 : 1;
 				const nextFocusBlock = Math.min(
 					Math.max(0, currentFocusBlockIdxRef.current + step),
 					blocksLength - 1
@@ -158,25 +167,14 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 					})
 				);
 			}
+
 			// Handle Enter key
 			else if (key === keyBindings.ENTER && !ev.shiftKey) {
 				ev.preventDefault();
 				const step = ev.altKey ? 0 : 1;
 
-				const newText = editableBlockRef.current.textContent || "";
+				const newText = blockTextRef.current || "";
 
-				//  This is for a bug that was happening with high speed updates
-				if (cursorPositionRef.current !== newText.length) {
-					dispatch(addNewBlock({ blockId: block.id, insertMode }));
-
-					dispatch(
-						setPagesState({
-							pageId: currentPageId,
-							currentFocusBlockIdx: currentFocusBlockIdxRef.current + step,
-						})
-					);
-					return;
-				}
 				const leftText = newText.substring(0, cursorPositionRef.current);
 				const rightText = newText.substring(
 					cursorPositionRef.current,
@@ -201,8 +199,9 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 						cursorPosition: newCursorPosition,
 					})
 				);
+			} else if (key === keyBindings.ENTER && ev.shiftKey) {
+				ev.preventDefault();
 			}
-
 			// Handle Backspace
 			else if (key === keyBindings.BACKSPACE) {
 				const precedingBlockIdx = Math.max(
@@ -289,7 +288,6 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	const handleOnChange = useCallback(
 		(ev: ContentEditableEvent) => {
 			const newText = editableBlockRef.current?.textContent ?? "";
-			if (newText === blockTextRef.current) return;
 			blockTextRef.current = newText;
 		},
 		[editableBlockRef, blockTextRef]
@@ -300,7 +298,7 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	// Use Effects
 	useEffect(() => {
 		currentPageRef.current = currentPage;
-	}, [currentPage, cursorPosition]);
+	}, [currentPage]);
 
 	useEffect(() => {
 		currentFocusBlockIdxRef.current = currentFocusBlockIdx;
@@ -312,8 +310,6 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 
 	useEffect(() => {
 		blockTextRef.current = block.content;
-		// if (editableBlockRef.current)
-		// 	editableBlockRef.current.innerHTML = block.content;
 	}, [block]);
 
 	useEffect(() => {
