@@ -15,21 +15,6 @@ const Page = () => {
 		pages: page.pages,
 		currentPageId: page.currentPageId,
 	}));
-	const isPagesStateAvailable = useSelector((state: RootState) => {
-		if (!currentPageId) return false;
-
-		return state.app.pagesState[currentPageId] !== undefined;
-	});
-	const dispatch = useDispatch();
-	useEffect(() => {
-		if (currentPageId === null) return;
-		if (!isPagesStateAvailable)
-			dispatch(
-				setPagesState({
-					pageId: currentPageId,
-				})
-			);
-	}, [dispatch, currentPageId, isPagesStateAvailable]);
 
 	return (
 		<div className="editor__page">

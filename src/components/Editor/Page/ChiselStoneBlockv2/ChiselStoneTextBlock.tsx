@@ -161,28 +161,39 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 			// Handle Enter key
 			else if (key === keyBindings.ENTER && !ev.shiftKey) {
 				ev.preventDefault();
-				const newText = blockTextRef.current || "";
+				const step = ev.altKey ? 0 : 1;
+
+				const newText = editableBlockRef.current.textContent || "";
+
+				//  This is for a bug that was happening with high speed updates
+				if (cursorPositionRef.current !== newText.length) {
+					dispatch(addNewBlock({ blockId: block.id, insertMode }));
+
+					dispatch(
+						setPagesState({
+							pageId: currentPageId,
+							currentFocusBlockIdx: currentFocusBlockIdxRef.current + step,
+						})
+					);
+					return;
+				}
 				const leftText = newText.substring(0, cursorPositionRef.current);
 				const rightText = newText.substring(
 					cursorPositionRef.current,
 					newText.length
 				);
-				console.log({ leftText, rightText, cur: cursorPositionRef.current });
-				const step = ev.altKey ? 0 : 1;
+
 				blockTextRef.current = leftText;
+				dispatch(updateBlock({ block: block as Block, content: leftText }));
 				dispatch(
 					addNewBlock({ blockId: block.id, insertMode, content: rightText })
 				);
-				dispatch(updateBlock({ block: block as Block, content: leftText }));
 
-				// update the focus block index and the cursor position
-				const newFocusBlockIdx = Math.max(
-					currentFocusBlockIdxRef.current + step,
-					0
-				);
-				const newCursorPosition =
-					insertMode === "before" ? 0 : rightText.length;
+				// Calculate the new focus block index and cursor position after adding the new block
+				const newFocusBlockIdx = currentFocusBlockIdxRef.current + step;
+				const newCursorPosition = insertMode === "before" ? leftText.length : 0;
 
+				// Update the focus block index and cursor position
 				dispatch(
 					setPagesState({
 						pageId: currentPageId,
@@ -191,6 +202,7 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 					})
 				);
 			}
+
 			// Handle Backspace
 			else if (key === keyBindings.BACKSPACE) {
 				const precedingBlockIdx = Math.max(
@@ -199,8 +211,11 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 				);
 				const precedingBlock = currentPage.content[precedingBlockIdx];
 
+				const selection = window.getSelection();
+				const isTextSelected = selection && selection.toString().length > 0;
+
 				// if there is not text content then remove the block
-				if (blockEditor.textContent === "") {
+				if (blockEditor.textContent === "" && !isTextSelected) {
 					ev.preventDefault();
 					dispatch(removeBlock(block));
 
@@ -216,13 +231,16 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 				}
 				// if it has text content
 				else if (
+					!isTextSelected &&
 					cursorPositionRef.current === 0 &&
 					precedingBlock !== undefined &&
 					currentFocusBlockIdxRef.current !== 0 &&
 					isTextTypeBlock(precedingBlock)
 				) {
 					// merge the block with the previous block
+
 					ev.preventDefault();
+
 					const currentBlockContent = blockEditor.textContent || "";
 					const mergedContent = precedingBlock.content + currentBlockContent;
 					const mergedCursorPos = precedingBlock.content.length;
@@ -282,17 +300,28 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	// Use Effects
 	useEffect(() => {
 		currentPageRef.current = currentPage;
+	}, [currentPage, cursorPosition]);
+
+	useEffect(() => {
 		currentFocusBlockIdxRef.current = currentFocusBlockIdx;
+	}, [currentFocusBlockIdx]);
+
+	useEffect(() => {
 		cursorPositionRef.current = cursorPosition;
-	}, [currentPage, currentFocusBlockIdx, cursorPosition, block]);
+	}, [cursorPosition]);
 
 	useEffect(() => {
 		blockTextRef.current = block.content;
+		// if (editableBlockRef.current)
+		// 	editableBlockRef.current.innerHTML = block.content;
 	}, [block]);
 
 	useEffect(() => {
-		if (blockIdx === currentFocusBlockIdxRef.current) {
-			editableBlockRef.current?.focus();
+		if (
+			blockIdx === currentFocusBlockIdxRef.current &&
+			editableBlockRef.current
+		) {
+			editableBlockRef.current.focus();
 		}
 	}, [blockIdx, currentFocusBlockIdx]);
 
