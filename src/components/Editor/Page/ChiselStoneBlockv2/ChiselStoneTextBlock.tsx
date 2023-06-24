@@ -10,6 +10,7 @@ import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
+	StringContentBlockTypes,
 	getClassNamesForTextBlocks,
 	getPlaceHolderTextForTextBlocks,
 	isTextTypeBlock,
@@ -138,7 +139,6 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 		},
 		[dispatch, currentPageRef, currentFocusBlockIdxRef, blockIdx]
 	);
-
 	const handleKeyDown = useCallback(
 		(ev: KeyboardEvent<HTMLDivElement>) => {
 			if (!editableBlockRef.current || !currentPageRef.current) return;
@@ -149,122 +149,180 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 			const { keyBindings } = editorConfig;
 			const currentPageId = currentPageRef.current._id;
 			const insertMode = ev.altKey ? "before" : "after";
-			const blocksLength = currentPage.content.length || 0;
+			const blocksLength = currentPageRef.current.content.length || 0;
 
-			// Handle Arrow keys
-			if (key === keyBindings.ARROW_UP || key === keyBindings.ARROW_DOWN) {
-				const step = key === keyBindings.ARROW_UP ? -1 : 1;
-
-				ev.preventDefault();
-				const nextFocusBlock = Math.min(
-					Math.max(0, currentFocusBlockIdxRef.current + step),
-					blocksLength - 1
-				);
-				dispatch(
-					setPagesState({
-						pageId: currentPageId,
-						currentFocusBlockIdx: nextFocusBlock,
-					})
-				);
-			}
-
-			// Handle Enter key
-			else if (key === keyBindings.ENTER && !ev.shiftKey) {
-				ev.preventDefault();
-				const step = ev.altKey ? 0 : 1;
-
-				const newText = blockTextRef.current || "";
-
-				const leftText = newText.substring(0, cursorPositionRef.current);
-				const rightText = newText.substring(
-					cursorPositionRef.current,
-					newText.length
-				);
-
-				blockTextRef.current = leftText;
-				dispatch(updateBlock({ block: block as Block, content: leftText }));
-				dispatch(
-					addNewBlock({ blockId: block.id, insertMode, content: rightText })
-				);
-
-				// Calculate the new focus block index and cursor position after adding the new block
-				const newFocusBlockIdx = currentFocusBlockIdxRef.current + step;
-				const newCursorPosition = insertMode === "before" ? leftText.length : 0;
-
-				// Update the focus block index and cursor position
-				dispatch(
-					setPagesState({
-						pageId: currentPageId,
-						currentFocusBlockIdx: newFocusBlockIdx,
-						cursorPosition: newCursorPosition,
-					})
-				);
-			} else if (key === keyBindings.ENTER && ev.shiftKey) {
-				ev.preventDefault();
-			}
-			// Handle Backspace
-			else if (key === keyBindings.BACKSPACE) {
-				const precedingBlockIdx = Math.max(
-					0,
-					currentFocusBlockIdxRef.current - 1
-				);
-				const precedingBlock = currentPage.content[precedingBlockIdx];
-
-				const selection = window.getSelection();
-				const isTextSelected = selection && selection.toString().length > 0;
-
-				// if there is not text content then remove the block
-				if (blockEditor.textContent === "" && !isTextSelected) {
-					ev.preventDefault();
-					dispatch(removeBlock(block));
-
-					if (precedingBlock === undefined) return;
-
-					dispatch(
-						setPagesState({
-							pageId: currentPage._id,
-							currentFocusBlockIdx: precedingBlockIdx,
-							cursorPosition: precedingBlock.content.length,
-						})
-					);
-				}
-				// if it has text content
-				else if (
-					!isTextSelected &&
-					cursorPositionRef.current === 0 &&
-					precedingBlock !== undefined &&
-					currentFocusBlockIdxRef.current !== 0 &&
-					isTextTypeBlock(precedingBlock)
-				) {
-					// merge the block with the previous block
+			switch (key) {
+				case keyBindings.ARROW_UP:
+				case keyBindings.ARROW_DOWN: {
+					const step = key === keyBindings.ARROW_UP ? -1 : 1;
 
 					ev.preventDefault();
-
-					const currentBlockContent = blockEditor.textContent || "";
-					const mergedContent = precedingBlock.content + currentBlockContent;
-					const mergedCursorPos = precedingBlock.content.length;
-					dispatch(
-						updateBlock({ block: precedingBlock, content: mergedContent })
+					const nextFocusBlock = Math.min(
+						Math.max(0, currentFocusBlockIdxRef.current + step),
+						blocksLength - 1
 					);
-					dispatch(removeBlock(block));
 					dispatch(
 						setPagesState({
 							pageId: currentPageId,
-							currentFocusBlockIdx: precedingBlockIdx,
-							cursorPosition: mergedCursorPos,
+							currentFocusBlockIdx: nextFocusBlock,
 						})
 					);
+					break;
 				}
-			} else {
-				// ...rest
+				case keyBindings.ENTER: {
+					ev.preventDefault();
+					const step = ev.altKey ? 0 : 1;
+
+					if (ev.shiftKey) {
+						// Check for Shift key
+						dispatch(
+							addNewBlock({ blockId: block.id, insertMode, content: "" })
+						);
+
+						const newFocusBlockIdx = currentFocusBlockIdxRef.current + step;
+						dispatch(
+							setPagesState({
+								pageId: currentPageId,
+								currentFocusBlockIdx: newFocusBlockIdx,
+								cursorPosition: 0,
+							})
+						);
+					} else {
+						const newText = blockTextRef.current || "";
+						const leftText = newText.substring(0, cursorPositionRef.current);
+						const rightText = newText.substring(
+							cursorPositionRef.current,
+							newText.length
+						);
+
+						blockTextRef.current = leftText;
+						dispatch(updateBlock({ block: block as Block, content: leftText }));
+						dispatch(
+							addNewBlock({ blockId: block.id, insertMode, content: rightText })
+						);
+
+						const newFocusBlockIdx = currentFocusBlockIdxRef.current + step;
+						const newCursorPosition =
+							insertMode === "before" ? leftText.length : 0;
+
+						dispatch(
+							setPagesState({
+								pageId: currentPageId,
+								currentFocusBlockIdx: newFocusBlockIdx,
+								cursorPosition: newCursorPosition,
+							})
+						);
+					}
+					break;
+				}
+
+				case keyBindings.BACKSPACE: {
+					const precedingBlockIdx = Math.max(
+						0,
+						currentFocusBlockIdxRef.current - 1
+					);
+					const precedingBlock = currentPage.content[precedingBlockIdx];
+
+					const selection = window.getSelection();
+					const isTextSelected = selection && selection.toString().length > 0;
+
+					if (blockEditor.textContent === "" && !isTextSelected) {
+						ev.preventDefault();
+						dispatch(removeBlock(block));
+
+						if (precedingBlock === undefined) return;
+
+						dispatch(
+							setPagesState({
+								pageId: currentPage._id,
+								currentFocusBlockIdx: precedingBlockIdx,
+								cursorPosition: precedingBlock.content.length,
+							})
+						);
+					} else if (
+						!isTextSelected &&
+						cursorPositionRef.current === 0 &&
+						precedingBlock !== undefined &&
+						currentFocusBlockIdxRef.current !== 0 &&
+						isTextTypeBlock(precedingBlock)
+					) {
+						ev.preventDefault();
+
+						const currentBlockContent = blockEditor.textContent || "";
+						const mergedContent = precedingBlock.content + currentBlockContent;
+						const mergedCursorPos = precedingBlock.content.length;
+						dispatch(
+							updateBlock({ block: precedingBlock, content: mergedContent })
+						);
+						dispatch(removeBlock(block));
+						dispatch(
+							setPagesState({
+								pageId: currentPageId,
+								currentFocusBlockIdx: precedingBlockIdx,
+								cursorPosition: mergedCursorPos,
+							})
+						);
+					}
+					break;
+				}
+				case keyBindings.DELETE_BLOCK: {
+					if (ev.ctrlKey) {
+						ev.preventDefault();
+						const step =
+							blocksLength - 1 === currentFocusBlockIdxRef.current ? -1 : 0;
+
+						dispatch(removeBlock(block));
+
+						const newFocusBlockIdx = Math.max(
+							0,
+							currentFocusBlockIdxRef.current + step
+						);
+						dispatch(
+							setPagesState({
+								pageId: currentPageId,
+								currentFocusBlockIdx: newFocusBlockIdx,
+							})
+						);
+					}
+					break;
+				}
+				case keyBindings.H1:
+				case keyBindings.H2:
+				case keyBindings.H3: {
+					if (ev.ctrlKey) {
+						ev.preventDefault();
+						const step = ev.altKey ? 0 : 1;
+						const type = ("h" + key) as StringContentBlockTypes;
+						dispatch(
+							addNewBlock({
+								blockId: block.id,
+								insertMode,
+								content: "",
+								type,
+							})
+						);
+						dispatch(
+							setPagesState({
+								pageId: currentPageRef.current._id,
+								currentFocusBlockIdx: currentFocusBlockIdxRef.current + step,
+								cursorPosition: 0,
+							})
+						);
+					}
+					break;
+				}
+
+				default:
+					break;
 			}
 		},
 		[
 			dispatch,
 			currentPage,
-			currentFocusBlockIdx,
-			cursorPosition,
-			editableBlockRef,
+			currentFocusBlockIdxRef,
+			block,
+			blockTextRef,
+			cursorPositionRef,
 		]
 	);
 
@@ -289,8 +347,12 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 		(ev: ContentEditableEvent) => {
 			const newText = editableBlockRef.current?.textContent ?? "";
 			blockTextRef.current = newText;
+			cursorPositionRef.current =
+				editableBlockRef.current?.textContent?.length ?? 0;
+
+			setCursorPosition();
 		},
-		[editableBlockRef, blockTextRef]
+		[editableBlockRef, blockTextRef, cursorPositionRef, setCursorPosition]
 	);
 
 	// HandlersEnd
@@ -310,6 +372,8 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 
 	useEffect(() => {
 		blockTextRef.current = block.content;
+		if (editableBlockRef.current)
+			editableBlockRef.current.innerHTML = block.content;
 	}, [block]);
 
 	useEffect(() => {
@@ -331,7 +395,11 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 			onFocus={handleFocus}
 			onChange={handleOnChange}
 			data-placeholder={getPlaceHolderTextForTextBlocks(block.type)}
-			style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}
+			style={{
+				wordBreak: "break-word",
+				whiteSpace: "pre-wrap",
+				display: "inline-block",
+			}}
 			html={blockTextRef.current}
 			innerRef={editableBlockRef}
 			className={`page__block__editable_div ${getClassNamesForTextBlocks(

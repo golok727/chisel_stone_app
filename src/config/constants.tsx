@@ -20,7 +20,7 @@ export const textBlockTypes: StringContentBlockTypes[] = [
 ];
 
 export const getClassNamesForTextBlocks = (
-	blockType: TextBlock["type"]
+	blockType: Block["type"]
 ): string => {
 	switch (blockType) {
 		case "text":
@@ -39,7 +39,7 @@ export const getClassNamesForTextBlocks = (
 	}
 };
 export const getPlaceHolderTextForTextBlocks = (
-	blockType: TextBlock["type"]
+	blockType: Block["type"]
 ): string => {
 	switch (blockType) {
 		case "text":
@@ -54,7 +54,7 @@ export const getPlaceHolderTextForTextBlocks = (
 			return "Heading 3";
 
 		default:
-			return "";
+			return "Text";
 	}
 };
 

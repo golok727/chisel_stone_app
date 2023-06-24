@@ -9,14 +9,13 @@ interface AppState {
 	showPages: boolean;
 	sidebarWidth: number;
 	currentFocusPageIdx: number;
-	pagesState: {
-		[pageId: string]: {
-			cursorPosition: number;
-			currentFocusBlockIdx: number;
-		};
-	};
+	pagesState: Record<string, PagesState>;
 }
 
+interface PagesState {
+	cursorPosition: number;
+	currentFocusBlockIdx: number;
+}
 const initialState: AppState = {
 	darkMode: true,
 	fontSize: 14,
