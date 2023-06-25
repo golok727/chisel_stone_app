@@ -111,12 +111,12 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	const handleKeyUp = useCallback(
 		(ev: KeyboardEvent<HTMLDivElement>) => {
 			setCursorPosition();
-			if (ev.key === "Backspace") {
-				ev.preventDefault();
-				setTimeout(() => {
-					positionCaret();
-				}, 0);
-			}
+			// if (ev.key === "Backspace") {
+			// 	ev.preventDefault();
+			// 	setTimeout(() => {
+			// 		positionCaret();
+			// 	}, 0);
+			// }
 		},
 		[setCursorPosition, positionCaret]
 	);
@@ -382,8 +382,9 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 			editableBlockRef.current
 		) {
 			editableBlockRef.current.focus();
+			positionCaret();
 		}
-	}, [blockIdx, currentFocusBlockIdx]);
+	}, [blockIdx, currentFocusBlockIdx, currentPage]);
 
 	return (
 		<ContentEditable
