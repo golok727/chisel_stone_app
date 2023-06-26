@@ -346,13 +346,14 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 	const handleOnChange = useCallback(
 		(ev: ContentEditableEvent) => {
 			const newText = editableBlockRef.current?.textContent ?? "";
+
 			blockTextRef.current = newText;
-			cursorPositionRef.current =
-				editableBlockRef.current?.textContent?.length ?? 0;
+			// cursorPositionRef.current =
+			// 	editableBlockRef.current?.textContent?.length ?? 0;
 
 			setCursorPosition();
 		},
-		[editableBlockRef, blockTextRef, cursorPositionRef, setCursorPosition]
+		[editableBlockRef, blockTextRef, setCursorPosition]
 	);
 
 	// HandlersEnd
@@ -401,7 +402,7 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 				whiteSpace: "pre-wrap",
 				display: "inline-block",
 			}}
-			html={blockTextRef.current}
+			html={blockTextRef.current.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
 			innerRef={editableBlockRef}
 			className={`page__block__editable_div ${getClassNamesForTextBlocks(
 				block.type
