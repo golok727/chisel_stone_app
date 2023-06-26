@@ -110,6 +110,73 @@ export const dummyPages: ChiselStoneNotebookPage[] = [
 
 		content: [],
 	},
+	{
+		_id: "1881687767596630",
+		title: "Chisel Stone Keyboard shortcuts",
+		color: "#555",
+		content: [
+			{
+				id: "1687767864001",
+				type: "h1",
+				content: "For adding new blocks",
+			},
+			{
+				id: "1687767875556",
+				type: "text",
+				content: "enter or add button for new block",
+			},
+			{
+				id: "1687767601572",
+				type: "text",
+				content: "ctrl  + 1 -> adds a heading 1 (alt for insert before)",
+			},
+			{
+				id: "1687767609754",
+				type: "text",
+				content: "ctrl  + 2 -> adds a heading 2(alt for insert before)",
+			},
+			{
+				id: "1687767624642",
+				type: "text",
+				content: "ctrl  + 3 -> adds a heading 3 (alt for insert before)",
+			},
+			{
+				id: "1687767903347",
+				type: "text",
+				content: "",
+			},
+			{
+				id: "1687767852859",
+				type: "h1",
+				content: "For Editing",
+			},
+			{
+				id: "1687767729714",
+				type: "text",
+				content: "shift + enter -> adds a new line without breaking the line",
+			},
+			{
+				id: "1687767761620",
+				type: "text",
+				content: "enter -> breaks line at the cursor position ",
+			},
+			{
+				id: "1687767775754",
+				type: "text",
+				content: "backspace -> removes a character",
+			},
+			{
+				id: "1687767809746",
+				type: "text",
+				content: "backspace (empty block)-> removes the block",
+			},
+			{
+				id: "1687767611386",
+				type: "text",
+				content: "ctrl + d -> delete block",
+			},
+		],
+	},
 ];
 
 export const emptyPageItems: {

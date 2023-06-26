@@ -40,7 +40,7 @@
 	padding: 0.3em 0.6em;
 	margin: 0.2em 0;
 	cursor: pointer;
-	line-height: 1;
+	line-height: 1.4;
 	border: 1px solid transparent;
 	transition: background 0.2s ease, color 0.02s ease;
 }
@@ -52,12 +52,12 @@
 	color: hsl(0, 0%, 100%);
 	/* background-color: var(--clr-light-text); */
 
-	box-shadow: 0 0 3px #ff9500;
+	border: 1px solid hsla(35, 100%, 50%, 0.2);
 }
 .pages_section__page.active {
 	/* color: var(--clr-secondary); */
+	border: 1px solid hsla(35, 100%, 50%, 0.3);
 	/* background-color: var(--clr-primary); */
-	box-shadow: 0 0 3px #ff9500;
 }
 
 .pages__no_pages {

@@ -1,46 +1,54 @@
-import React, { useEffect, useRef } from "react";
-import ContentEditable, { ContentEditableEvent } from "react-contenteditable";
+import React, { useEffect, useRef, useState } from "react";
+import ContentEditable from "react-contenteditable";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentPage, updatePageTitle } from "../../../features/pagesSlice";
 import "./header_styles.css";
-import { RootState } from "../../../app/store";
+
 const Header = () => {
 	const currentPage = useSelector(getCurrentPage);
 	const dispatch = useDispatch();
 	const titleEditorRef = useRef<HTMLElement | null>(null);
-
-	const pageTitleHandler = (e: ContentEditableEvent) => {
-		if (currentPage && titleEditorRef.current) {
-			dispatch(
-				updatePageTitle({
-					pageId: currentPage._id,
-					newTitle: titleEditorRef.current?.textContent || "Untitled",
-				})
-			);
-		}
+	const [currentHeader, setCurrentHeader] = useState(
+		currentPage?.title && currentPage.title.toLowerCase() !== "untitled"
+			? currentPage.title
+			: ""
+	);
+	const pageTitleHandler = () => {
+		setCurrentHeader(titleEditorRef.current?.textContent || "");
 	};
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-		if (e.key === "Enter") {
-			e.preventDefault();
-			if (titleEditorRef.current) {
-				titleEditorRef.current.blur();
+	const handleKeyDown = (ev: React.KeyboardEvent<HTMLDivElement>) => {
+		if (ev.key === "Enter") {
+			if (currentPage && titleEditorRef.current) {
+				ev.preventDefault();
+				dispatch(
+					updatePageTitle({
+						pageId: currentPage._id,
+						newTitle: titleEditorRef.current?.textContent || "Untitled",
+					})
+				);
+				if (titleEditorRef.current) {
+					titleEditorRef.current.blur();
+				}
 			}
 		}
 	};
+	useEffect(() => {
+		setCurrentHeader(
+			currentPage?.title && currentPage.title.toLowerCase() !== "untitled"
+				? currentPage.title
+				: ""
+		);
+	}, [currentPage]);
 
 	return (
 		<header>
 			<ContentEditable
 				innerRef={titleEditorRef}
 				className={`page__title_editor ${
-					!currentPage?.title || currentPage.title === "Untitled" ? "empty" : ""
+					!currentHeader || currentHeader === "Untitled" ? "empty" : ""
 				}`}
-				html={
-					currentPage?.title && currentPage.title.toLowerCase() !== "untitled"
-						? currentPage.title
-						: ""
-				}
+				html={currentHeader}
 				disabled={false}
 				onKeyDown={handleKeyDown}
 				onChange={pageTitleHandler}

@@ -172,11 +172,16 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 				case keyBindings.ENTER: {
 					ev.preventDefault();
 					const step = ev.altKey ? 0 : 1;
-
+					const nextType = ev.ctrlKey ? block.type : "text";
 					if (ev.shiftKey) {
 						// Check for Shift key
 						dispatch(
-							addNewBlock({ blockId: block.id, insertMode, content: "" })
+							addNewBlock({
+								blockId: block.id,
+								insertMode,
+								content: "",
+								type: nextType,
+							})
 						);
 
 						const newFocusBlockIdx = currentFocusBlockIdxRef.current + step;
@@ -198,7 +203,12 @@ const ChiselStoneTextBlock: React.FC<TextBlockProps> = ({
 						blockTextRef.current = leftText;
 						dispatch(updateBlock({ block: block as Block, content: leftText }));
 						dispatch(
-							addNewBlock({ blockId: block.id, insertMode, content: rightText })
+							addNewBlock({
+								blockId: block.id,
+								insertMode,
+								content: rightText,
+								type: nextType,
+							})
 						);
 
 						const newFocusBlockIdx = currentFocusBlockIdxRef.current + step;
