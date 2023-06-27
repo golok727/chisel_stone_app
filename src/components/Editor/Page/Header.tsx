@@ -20,17 +20,19 @@ const Header = () => {
 	const handleKeyDown = (ev: React.KeyboardEvent<HTMLDivElement>) => {
 		if (ev.key === "Enter") {
 			if (currentPage && titleEditorRef.current) {
-				ev.preventDefault();
-				dispatch(
-					updatePageTitle({
-						pageId: currentPage._id,
-						newTitle: titleEditorRef.current?.textContent || "Untitled",
-					})
-				);
-				if (titleEditorRef.current) {
-					titleEditorRef.current.blur();
-				}
+				titleEditorRef.current.blur();
 			}
+		}
+	};
+
+	const handleBlur = () => {
+		if (currentPage && titleEditorRef.current) {
+			dispatch(
+				updatePageTitle({
+					pageId: currentPage._id,
+					newTitle: titleEditorRef.current?.textContent || "Untitled",
+				})
+			);
 		}
 	};
 	useEffect(() => {
@@ -51,6 +53,7 @@ const Header = () => {
 				html={currentHeader}
 				disabled={false}
 				onKeyDown={handleKeyDown}
+				onBlur={handleBlur}
 				onChange={pageTitleHandler}
 				tagName="div"
 				data-placeholder="Untitled"
